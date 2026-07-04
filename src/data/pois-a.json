@@ -1,0 +1,44 @@
+[
+  {
+    "id": "elevador-1-inova",
+    "tipo": "poi-a",
+    "nome": "Elevador 1 Inova",
+    "predio_pai": "inova-usp",
+    "localizacao": [-23.557345351766113, -46.72771236838019],
+    "andares": ["1º andar", "2º andar", "3º andar"],
+    "area": "3 x 2 m",
+    "atualizado_em": "2026-07-02T15:55:00.000Z",
+    "rota_visual": [
+      {
+        "id": "instrucao-0",
+        "titulo": "Siga o caminho esquerdo",
+        "corpo": "Em direção aos bancos"
+      },
+      {
+        "id": "instrucao-1",
+        "titulo": "Vire à esquerda",
+        "corpo": ""
+      },
+      {
+        "id": "instrucao-2",
+        "titulo": "Siga em direção à porta",
+        "corpo": ""
+      },
+      {
+        "id": "instrucao-3",
+        "titulo": "Entre e vire à esquerda",
+        "corpo": ""
+      },
+      {
+        "id": "instrucao-4",
+        "titulo": "Siga em frente",
+        "corpo": "Siga até avistar o elevador à esquerda"
+      },
+      {
+        "id": "instrucao-5",
+        "titulo": "📌 Você chegou!",
+        "corpo": ""
+      }
+    ]
+  }
+]
