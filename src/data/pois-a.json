@@ -1,44 +1,54 @@
 [
   {
-    "id": "elevador-1-inova",
-    "tipo": "poi-a",
-    "nome": "Elevador 1 Inova",
-    "predio_pai": "inova-usp",
-    "localizacao": [-23.557345351766113, -46.72771236838019],
-    "andares": ["1º andar", "2º andar", "3º andar"],
-    "area": "3 x 2 m",
-    "atualizado_em": "2026-07-02T15:55:00.000Z",
-    "rota_visual": [
-      {
-        "id": "instrucao-0",
-        "titulo": "Siga o caminho esquerdo",
-        "corpo": "Em direção aos bancos"
+    "id": "elevator-inova-1",
+    "type": "Feature",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [-46.72771236838019, -23.557345351766113]
+    },
+
+    "properties": {
+      "category": "elevator",
+      "name": "Elevador 1 Inova",
+      "parent_building_id": "inova-usp",
+      "floors": [1, 2, 3],
+      "dimensions": {
+        "width_meters": 2.0,
+        "length_meters": 3.0
       },
-      {
-        "id": "instrucao-1",
-        "titulo": "Vire à esquerda",
-        "corpo": ""
-      },
-      {
-        "id": "instrucao-2",
-        "titulo": "Siga em direção à porta",
-        "corpo": ""
-      },
-      {
-        "id": "instrucao-3",
-        "titulo": "Entre e vire à esquerda",
-        "corpo": ""
-      },
-      {
-        "id": "instrucao-4",
-        "titulo": "Siga em frente",
-        "corpo": "Siga até avistar o elevador à esquerda"
-      },
-      {
-        "id": "instrucao-5",
-        "titulo": "📌 Você chegou!",
-        "corpo": ""
-      }
-    ]
+      "updated_at": "2026-07-02T15:55:00.000Z",
+      "visual_route": [
+        {
+          "step_number": 0,
+          "title": "Siga o caminho esquerdo",
+          "description": "Em direção aos bancos"
+        },
+        {
+          "step_number": 1,
+          "title": "Vire à esquerda",
+          "description": ""
+        },
+        {
+          "step_number": 2,
+          "title": "Siga em direção à porta",
+          "description": ""
+        },
+        {
+          "step_number": 3,
+          "title": "Entre e vire à esquerda",
+          "description": ""
+        },
+        {
+          "step_number": 4,
+          "title": "Siga em frente",
+          "description": "Siga até avistar o elevador à esquerda"
+        },
+        {
+          "step_number": 5,
+          "title": "📌 Você chegou!",
+          "description": ""
+        }
+      ]
+    }
   }
 ]

@@ -41,13 +41,16 @@ function App() {
                     style={{ width: "100%", height: 150, objectFit: "cover" }}
                   />
                   <div className="body">
-                    <h2 className="nome">{poi.nome}</h2>
+                    <h2 className="nome">{poi.properties.name}</h2>
                     <div className="andares" key={poi.id}>
-                      {poi.andares.map((andar) => (
-                        <span>{andar}</span>
+                      {poi.properties.floors.map((floor) => (
+                        <span>{floor}º andar</span>
                       ))}
                     </div>
-                    <span>Área de {poi.area}</span>
+                    <span>
+                      Área de {poi.properties.dimensions.length_meters} X{" "}
+                      {poi.properties.dimensions.width_meters} m
+                    </span>
                   </div>
                 </div>
               );
@@ -103,16 +106,16 @@ function App() {
         {selectedPoiA && (
           <div className="instrucao-lista">
             <h2>🧭 Rota visual</h2>
-            {selectedPoiA.rota_visual.map((instrucao) => {
+            {selectedPoiA.properties.visual_route.map((direction) => {
               const imgPath = new URL(
-                `./data/images/elevador-1-inova/rota-visual/${instrucao.id}.png`,
+                `./data/images/${selectedPoiA.id}/rota-visual/${direction.step_number}.png`,
                 import.meta.url,
               ).href;
               return (
-                <div className="instrucao" key={instrucao.id}>
+                <div className="instrucao" key={direction.step_number}>
                   <header>
-                    <h3>{instrucao.titulo}</h3>
-                    <p>{instrucao.corpo}</p>
+                    <h3>{direction.title}</h3>
+                    <p>{direction.description}</p>
                   </header>
                   <img
                     src={imgPath}
