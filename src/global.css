@@ -94,10 +94,20 @@ h3 {
   height: 100svh;
 }
 
-.sidebar .information {
-  text-align: center;
+.building-info {
+  min-height: 80vh;
 }
-.sidebar .information .icon {
+
+.pois {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.pois header {
+  text-align: center;
+  margin-bottom: 0.8rem;
+}
+.pois .icon {
   font-size: 2rem;
 }
 
@@ -118,13 +128,12 @@ h3 {
 .instrucao-lista {
   display: flex;
   flex-direction: column;
+  flex-wrap: wrap;
   gap: 1rem;
-  padding: 2rem;
 }
 
-.pois {
-  display: flex;
-  justify-content: center;
+.instrucao-lista h2 {
+  margin-top: 2rem;
 }
 
 .pois .card {
@@ -132,16 +141,17 @@ h3 {
   flex-direction: column;
   gap: 4px;
   text-align: start;
-  border: 1px solid var(--gray-0);
+  background: #e1e1e1;
+  overflow: hidden;
   border-radius: 4px;
 }
 
 .card.selected {
-  background-color: #d5d4f3;
+  border: 3px solid #4e4e4e;
 }
 
 .card:hover {
-  border: 3px solid #7f7cfa;
+  border: 3px solid blue;
 }
 
 .card .body {
@@ -174,18 +184,14 @@ h3 {
   border-radius: 16px;
 }
 
-.poi-a-descricao {
-  margin-top: 2rem;
-  margin-left: 2rem;
-}
-
 .poi-a-descricao h2 {
-  margin-bottom: 1rem;
+  margin: 1rem 0;
 }
 
 .poi-a-descricao .img-lista {
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   gap: 1rem;
 }
 
