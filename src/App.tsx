@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Map, Marker, Source, Layer } from "@vis.gl/react-maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
 
+import { X } from "lucide-react";
+
 import POIS_A from "./data/pois-a.json";
 import PREDIOS from "./data/predios.json";
 const inova = PREDIOS[0];
@@ -144,6 +146,15 @@ function App() {
           )}
 
           <div className="poi-info m-8">
+            {selectedPoiA && (
+              <div
+                className="cursor-pointer w-fit border-2 border-[#808080] text-[#5e5e5e] rounded-sm hover:bg-[#f0f0f0] rounded-8"
+                onClick={() => setSelectedPoiA(null)}
+              >
+                <X size={36} />
+              </div>
+            )}
+
             {selectedPoiA && (
               <div className="poi-a-descricao">
                 <h2>Elevador 1</h2>
