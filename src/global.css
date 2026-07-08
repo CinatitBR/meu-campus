@@ -1,3 +1,5 @@
+@import "tailwindcss";
+
 :root {
   --text: #6b6375;
   --text-h: #08060d;
@@ -8,8 +10,22 @@
   --accent-bg: rgba(170, 59, 255, 0.1);
   --accent-border: rgba(170, 59, 255, 0.5);
   --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+
+  /* == shadows == */
+  --shadow-color: 0deg 0% 66%;
+  --shadow-elevation-low:
+    0.5px 0.5px 0.9px hsl(var(--shadow-color) / 0.23),
+    1.8px 1.8px 3.3px -1.2px hsl(var(--shadow-color) / 0.46);
+  --shadow-elevation-medium:
+    0.5px 0.5px 0.9px hsl(var(--shadow-color) / 0.22),
+    2.7px 2.8px 5.1px -0.6px hsl(var(--shadow-color) / 0.36),
+    8.9px 9.2px 16.8px -1.2px hsl(var(--shadow-color) / 0.5);
+  --shadow-elevation-high:
+    0.5px 0.5px 0.9px hsl(var(--shadow-color) / 0.24),
+    5.5px 5.7px 10.4px -0.3px hsl(var(--shadow-color) / 0.34),
+    11.6px 11.9px 21.8px -0.6px hsl(var(--shadow-color) / 0.43),
+    22.5px 23.1px 42.3px -0.9px hsl(var(--shadow-color) / 0.53),
+    42.2px 43.4px 79.5px -1.2px hsl(var(--shadow-color) / 0.63);
 
   --gray-0: #a4a4a4;
   --gray-dark: #212020;
@@ -141,17 +157,15 @@ h3 {
   flex-direction: column;
   gap: 4px;
   text-align: start;
-  background: #e1e1e1;
   overflow: hidden;
-  border-radius: 4px;
-}
-
-.card.selected {
-  border: 3px solid #4e4e4e;
 }
 
 .card:hover {
-  border: 3px solid blue;
+  box-shadow: var(--shadow-elevation-low);
+}
+
+.card.selected {
+  box-shadow: var(--shadow-elevation-low);
 }
 
 .card .body {

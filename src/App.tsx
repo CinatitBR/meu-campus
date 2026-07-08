@@ -35,9 +35,9 @@ function App() {
 
   return (
     <div className="app">
-      <div className="right" style={{ padding: "2rem" }}>
+      <div className="right">
         <div
-          className="map"
+          className="map border border-[#ededed] m-4"
           style={{ height: "80svh", overflow: "hidden", borderRadius: "1rem" }}
         >
           <Map
@@ -77,9 +77,9 @@ function App() {
           </Map>
         </div>
 
-        <section className="building-info" style={{ margin: "2rem" }}>
+        <section className="building-info">
           <section className="pois">
-            <header>
+            <header className="w-full text-[#160d44]">
               <span className="icon">🏢</span>
               <h3>INOVA USP</h3>
             </header>
@@ -92,7 +92,7 @@ function App() {
                 ).href;
                 return (
                   <div
-                    className={`card ${selectedPoiA && selectedPoiA.id == poi.id && "selected"}`}
+                    className={`card cursor-pointer rounded-xl border border-[#ededed] ${selectedPoiA && selectedPoiA.id == poi.id && "selected"}`}
                     key={poi.id}
                     onClick={() => {
                       if (selectedPoiA && poi.id === selectedPoiA.id)
@@ -110,7 +110,9 @@ function App() {
                       <h2 className="nome">{poi.properties.name}</h2>
                       <div className="andares" key={poi.id}>
                         {poi.properties.floors.map((floor) => (
-                          <span>{floor}º andar</span>
+                          <span className="border border-[#eccdb1]">
+                            {floor}º andar
+                          </span>
                         ))}
                       </div>
                       <span>
@@ -141,51 +143,60 @@ function App() {
             </div>
           )}
 
-          {selectedPoiA && (
-            <div className="poi-a-descricao">
-              <h2>Elevador 1</h2>
-              <div className="img-lista">
-                {["front-photo.jpg", "inside-photo.jpg"].map((filename) => {
+          <div className="poi-info m-8">
+            {selectedPoiA && (
+              <div className="poi-a-descricao">
+                <h2>Elevador 1</h2>
+                <div className="img-lista">
+                  {["front-photo.jpg", "inside-photo.jpg"].map((filename) => {
+                    const imgPath = new URL(
+                      `./data/images/${selectedPoiA.id}/${filename}`,
+                      import.meta.url,
+                    ).href;
+                    return (
+                      <img
+                        className="border-4 border-[#ffb179]"
+                        src={imgPath}
+                        alt="Minha imagem href"
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {selectedPoiA && (
+              <div className="instrucao-lista">
+                <h2>🧭 Rota visual</h2>
+                {selectedPoiA.properties.visual_route.map((direction) => {
                   const imgPath = new URL(
-                    `./data/images/${selectedPoiA.id}/${filename}`,
+                    `./data/images/${selectedPoiA.id}/rota-visual/${direction.step_number}.png`,
                     import.meta.url,
                   ).href;
-                  return <img src={imgPath} alt="Minha imagem href" />;
+                  return (
+                    <div className="instrucao" key={direction.step_number}>
+                      <header>
+                        <h3>{direction.title}</h3>
+                        <p>{direction.description}</p>
+                      </header>
+                      <img
+                        className="border-4 border-[#ffb179]"
+                        src={imgPath}
+                        alt="Esse é a imagem da instrução"
+                        style={{
+                          width: "100%",
+                          maxWidth: 400,
+                          height: 200,
+                          objectFit: "cover",
+                          borderRadius: 8,
+                        }}
+                      />
+                    </div>
+                  );
                 })}
               </div>
-            </div>
-          )}
-
-          {selectedPoiA && (
-            <div className="instrucao-lista">
-              <h2>🧭 Rota visual</h2>
-              {selectedPoiA.properties.visual_route.map((direction) => {
-                const imgPath = new URL(
-                  `./data/images/${selectedPoiA.id}/rota-visual/${direction.step_number}.png`,
-                  import.meta.url,
-                ).href;
-                return (
-                  <div className="instrucao" key={direction.step_number}>
-                    <header>
-                      <h3>{direction.title}</h3>
-                      <p>{direction.description}</p>
-                    </header>
-                    <img
-                      src={imgPath}
-                      alt="Esse é a imagem da instrução"
-                      style={{
-                        width: "100%",
-                        maxWidth: 400,
-                        height: 200,
-                        objectFit: "cover",
-                        borderRadius: 8,
-                      }}
-                    />
-                  </div>
-                );
-              })}
-            </div>
-          )}
+            )}
+          </div>
         </section>
       </div>
     </div>
