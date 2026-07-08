@@ -81,7 +81,7 @@ function App() {
 
         <section className="building-info">
           <section className="pois">
-            <header className="w-full text-[#160d44]">
+            <header className="w-full text-[#160d44] bg-[#917cff] p-4">
               <span className="icon">🏢</span>
               <h3>INOVA USP</h3>
             </header>
