@@ -1,0 +1,22 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "surface-point-101",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-46.734735, -23.560584]
+      },
+      "properties": {
+        "category": "surface_point",
+        "media": {
+          "photo_url": "./data/images/surface-points/surface-point-101/photo.jpg",
+          "thumbnail_url": "./data/images/surface-points/surface-point-101/photo.jpg"
+        },
+        "description": "Piso de paralelepípedo irregular com buracos e raízes de árvores expostas.",
+        "created_at": "2026-07-08T17:00:00.000Z"
+      }
+    }
+  ]
+}

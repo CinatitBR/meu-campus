@@ -6,6 +6,7 @@ import { X } from "lucide-react";
 
 import POIS_A from "./data/pois-a.json";
 import PREDIOS from "./data/predios.json";
+import SURFACE_DATA from "./data/surface-points.json";
 const inova = PREDIOS[0];
 
 type PoiA = (typeof POIS_A)[0];
@@ -28,6 +29,7 @@ type PoiA = (typeof POIS_A)[0];
 
 function App() {
   const [selectedPoiA, setSelectedPoiA] = useState<PoiA | null>(null);
+  const [currentZoom, setCurrentZoom] = useState<number>(18);
 
   // Define your GeoJSON data
   const geojsonSource = {
@@ -49,7 +51,8 @@ function App() {
               zoom: 18,
             }}
             style={{ width: "100%", height: "100%" }}
-            mapStyle="https://tiles.openfreemap.org/styles/liberty"
+            mapStyle="https://tiles.openfreemap.org/styles/bright"
+            onZoom={(e) => setCurrentZoom(e.viewState.zoom)}
           >
             <Marker
               latitude={inova.ponto_central[0]}
@@ -76,6 +79,65 @@ function App() {
                 paint={{ "circle-radius": 10, "circle-color": "#ff0055" }}
               />
             </Source>
+            {/* <Source type="geojson" data={SURFACE_DATA}>
+              <Layer
+                id="surface-point"
+                type="circle"
+                paint={{
+                  "circle-color": "#2ecc71",
+                  "circle-radius": 8,
+                }}
+              />
+            </Source> */}
+            {currentZoom >= 16 &&
+              SURFACE_DATA.features.map((feature) => {
+                const [longitude, latitude] = feature.geometry.coordinates;
+                const thumbnail_url = new URL(
+                  `./data/images/surface-points/${feature.id}/photo.jpg`,
+                  import.meta.url,
+                ).href;
+
+                // Cor da borda baseada no estado do piso
+                // const borderColor =
+                //   smoothness === "good" ? "#2ecc71" :
+                //   smoothness === "intermediate" ? "#f1c40f" : "#e74c3c";
+                const borderColor = "#2ecc71;";
+
+                return (
+                  <Marker
+                    key={feature.id}
+                    latitude={latitude}
+                    longitude={longitude}
+                    anchor="bottom"
+                  >
+                    <div
+                      className=""
+                      style={{
+                        width: "48px",
+                        height: "48px",
+                        borderRadius: "50%",
+                        border: `3px solid ${borderColor}`,
+                        overflow: "hidden",
+                        boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
+                        backgroundColor: "#fff",
+                        cursor: "pointer",
+                        padding: "3px",
+                      }}
+                    >
+                      <img
+                        src={thumbnail_url}
+                        alt="Piso"
+                        style={{
+                          borderRadius: "50%",
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                        }}
+                      />
+                    </div>
+                  </Marker>
+                );
+              })}
           </Map>
         </div>
 
