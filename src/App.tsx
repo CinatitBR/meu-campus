@@ -45,8 +45,6 @@ function App() {
 
     const clickedFeature = features[0];
 
-    console.log(clickedFeature);
-
     // Busca no seu JSON local se você tem informações estendidas para esse prédio
     const buildingPois = POIS_A.filter((poi) => {
       return (
@@ -112,38 +110,22 @@ function App() {
               SURFACE_DATA.features.map((feature) => {
                 const [longitude, latitude] = feature.geometry.coordinates;
                 const thumbnail_url = new URL(
-                  `./data/images/surface-points/${feature.id}/photo.jpg`,
+                  `./data/images/surface-points/${feature.properties.id}/photo.jpg`,
                   import.meta.url,
                 ).href;
 
                 return (
                   <Marker
-                    key={feature.id}
+                    key={feature.properties.id}
                     latitude={latitude}
                     longitude={longitude}
                     anchor="bottom"
                   >
-                    <div
-                      style={{
-                        width: "48px",
-                        height: "48px",
-                        borderRadius: "50%",
-                        overflow: "hidden",
-                        boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
-                        backgroundColor: "#fff",
-                        cursor: "pointer",
-                        padding: "3px",
-                      }}
-                    >
+                    <div className="w-12 h-12 rounded-full overflow-hidden shadow-md bg-white cursor-pointer p-[3px]">
                       <img
                         src={thumbnail_url}
                         alt="Piso"
-                        style={{
-                          borderRadius: "50%",
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "cover",
-                        }}
+                        className="rounded-full w-full h-full object-cover"
                       />
                     </div>
                   </Marker>
@@ -181,17 +163,23 @@ function App() {
                 {buildingPois &&
                   buildingPois.map((poi) => {
                     const imgPath = new URL(
-                      `./data/images/${poi.id}/front-photo.jpg`,
+                      `./data/images/${poi.properties.id}/front-photo.jpg`,
                       import.meta.url,
                     ).href;
                     return (
                       <div
-                        className={`card cursor-pointer rounded-xl border border-[#ededed] ${selectedPoi && selectedPoi.id == poi.id && "selected"}`}
-                        key={poi.id}
+                        className={`card cursor-pointer rounded-xl border border-[#ededed] ${selectedPoi && selectedPoi.properties.id == poi.properties.id && "selected"}`}
+                        key={poi.properties.id}
                         onClick={() => {
-                          if (selectedPoi && poi.id === selectedPoi.id)
+                          if (
+                            selectedPoi &&
+                            poi.properties.id === selectedPoi.properties.id
+                          )
                             setSelectedPoi(null);
-                          if (!selectedPoi || poi.id !== selectedPoi.id)
+                          if (
+                            !selectedPoi ||
+                            poi.properties.id !== selectedPoi.properties.id
+                          )
                             setSelectedPoi(poi);
                         }}
                       >
@@ -260,7 +248,7 @@ function App() {
                   <div className="img-lista">
                     {["front-photo.jpg", "inside-photo.jpg"].map((filename) => {
                       const imgPath = new URL(
-                        `./data/images/${selectedPoi.id}/${filename}`,
+                        `./data/images/${selectedPoi.properties.id}/${filename}`,
                         import.meta.url,
                       ).href;
                       return (
@@ -281,7 +269,7 @@ function App() {
                   <h2>🧭 Rota visual</h2>
                   {selectedPoi.properties.visual_route.map((direction) => {
                     const imgPath = new URL(
-                      `./data/images/${selectedPoi.id}/rota-visual/${direction.step_number}.png`,
+                      `./data/images/${selectedPoi.properties.id}/rota-visual/${direction.step_number}.png`,
                       import.meta.url,
                     ).href;
                     return (

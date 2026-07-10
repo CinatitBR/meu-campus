@@ -1,6 +1,5 @@
 [
   {
-    "id": "elevator-inova-1",
     "type": "Feature",
     "geometry": {
       "type": "Point",
@@ -8,9 +7,11 @@
     },
 
     "properties": {
-      "category": "elevator",
-      "name": "Elevador 1 Inova",
+      "id": "elevator-inova-1",
       "parent_building_id": "inova-usp",
+      "highway": "elevator",
+      "poi:type": "accessibility",
+      "name": "Elevador 1 Inova",
       "floors": [1, 2, 3],
       "dimensions": {
         "width_meters": 2.0,
