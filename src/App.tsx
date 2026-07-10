@@ -85,7 +85,7 @@ function App() {
               zoom: 16,
             }}
             style={{ width: "100%", height: "100%" }}
-            mapStyle="https://tiles.openfreemap.org/styles/bright"
+            mapStyle="https://tiles.openfreemap.org/styles/liberty"
             onZoom={(e) => setCurrentZoom(e.viewState.zoom)}
             minZoom={16}
             maxBounds={CAMPUS_BOUNDS}
