@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Map, Marker, Source, Layer } from "@vis.gl/react-maplibre";
+import type { MapLayerMouseEvent } from "@vis.gl/react-maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
 
 import { X } from "lucide-react";
@@ -7,7 +8,7 @@ import { X } from "lucide-react";
 import POIS_A from "./data/pois-a.json";
 import PREDIOS from "./data/predios.json";
 import SURFACE_DATA from "./data/surface-points.json";
-const inova = PREDIOS[0];
+const inova = PREDIOS.features[0];
 
 type PoiA = (typeof POIS_A)[0];
 
@@ -17,24 +18,44 @@ type PoiA = (typeof POIS_A)[0];
 //   features: POIS_A,
 // };
 
-// Define the style for your layer
-// const layerStyle = {
-//   id: "point-layer",
-//   type: "circle",
-//   paint: {
-//     "circle-radius": 10,
-//     "circle-color": "#ff0055",
-//   },
-// };
-
 function App() {
-  const [selectedPoiA, setSelectedPoiA] = useState<PoiA | null>(null);
+  const [selectedBuilding, setSelectedBuilding] = useState<any | null>(null);
+  const [buildingPois, setBuildingPois] = useState<PoiA[] | null>(null);
+  const [selectedPoi, setSelectedPoi] = useState<PoiA | null>(null);
   const [currentZoom, setCurrentZoom] = useState<number>(18);
+
+  const INTERACTIVE_LAYERS = [
+    "poi_r20",
+    "poi_r7",
+    "poi_r1",
+    "poi_transit",
+    "poi_own",
+  ];
 
   // Define your GeoJSON data
   const geojsonSource = {
     type: "FeatureCollection",
-    features: selectedPoiA ? [selectedPoiA] : [],
+    features: selectedPoi ? [selectedPoi] : [],
+  };
+
+  const handleMapClick = (event: MapLayerMouseEvent) => {
+    // Verifica se há features sob o ponto onde o usuário clicou
+    const features = event.features;
+    if (!features || features.length === 0) return;
+
+    const clickedFeature = features[0];
+
+    console.log(clickedFeature);
+
+    // Busca no seu JSON local se você tem informações estendidas para esse prédio
+    const buildingPois = POIS_A.filter((poi) => {
+      return (
+        poi.properties.parent_building_id === clickedFeature.properties?.id
+      );
+    });
+
+    setSelectedBuilding(clickedFeature);
+    if (buildingPois.length > 0) setBuildingPois(buildingPois);
   };
 
   return (
@@ -46,32 +67,40 @@ function App() {
         >
           <Map
             initialViewState={{
-              latitude: inova.ponto_central[0],
-              longitude: inova.ponto_central[1],
+              longitude: inova.geometry.coordinates[0],
+              latitude: inova.geometry.coordinates[1],
               zoom: 18,
             }}
             style={{ width: "100%", height: "100%" }}
             mapStyle="https://tiles.openfreemap.org/styles/bright"
             onZoom={(e) => setCurrentZoom(e.viewState.zoom)}
+            // 1. Escuta cliques apenas nas camadas de prédios
+            interactiveLayerIds={INTERACTIVE_LAYERS}
+            onClick={handleMapClick}
+            // 2. Muda o ponteiro do mouse para "mãozinha" ao passar sobre um prédio
+            onMouseEnter={(e) => {
+              if (e.features?.length)
+                e.target.getCanvas().style.cursor = "pointer";
+            }}
+            onMouseLeave={(e) => {
+              e.target.getCanvas().style.cursor = "";
+            }}
           >
-            <Marker
-              latitude={inova.ponto_central[0]}
-              longitude={inova.ponto_central[1]}
-            >
-              <span
-                style={{
-                  fontStyle: "italic",
-                  color: "#212020",
-                  fontSize: "20px",
-                  textAlign: "center",
-                  display: "grid",
-                  placeItems: "center",
+            <Source id="my-poi-source" type="geojson" data={PREDIOS}>
+              <Layer
+                id="poi_own"
+                type="symbol"
+                layout={{
+                  "text-field": ["get", "name"],
+                  "text-anchor": "top",
+                  "text-offset": [0, 1.5],
                 }}
-              >
-                <span>🏢</span>
-                <span>{inova.nome}</span>
-              </span>
-            </Marker>
+                minzoom={16}
+                paint={{
+                  "text-color": "#333333",
+                }}
+              />
+            </Source>
             <Source id="my-data-source" type="geojson" data={geojsonSource}>
               <Layer
                 id="point-layer"
@@ -79,16 +108,6 @@ function App() {
                 paint={{ "circle-radius": 10, "circle-color": "#ff0055" }}
               />
             </Source>
-            {/* <Source type="geojson" data={SURFACE_DATA}>
-              <Layer
-                id="surface-point"
-                type="circle"
-                paint={{
-                  "circle-color": "#2ecc71",
-                  "circle-radius": 8,
-                }}
-              />
-            </Source> */}
             {currentZoom >= 16 &&
               SURFACE_DATA.features.map((feature) => {
                 const [longitude, latitude] = feature.geometry.coordinates;
@@ -96,12 +115,6 @@ function App() {
                   `./data/images/surface-points/${feature.id}/photo.jpg`,
                   import.meta.url,
                 ).href;
-
-                // Cor da borda baseada no estado do piso
-                // const borderColor =
-                //   smoothness === "good" ? "#2ecc71" :
-                //   smoothness === "intermediate" ? "#f1c40f" : "#e74c3c";
-                const borderColor = "#2ecc71;";
 
                 return (
                   <Marker
@@ -111,12 +124,10 @@ function App() {
                     anchor="bottom"
                   >
                     <div
-                      className=""
                       style={{
                         width: "48px",
                         height: "48px",
                         borderRadius: "50%",
-                        border: `3px solid ${borderColor}`,
                         overflow: "hidden",
                         boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
                         backgroundColor: "#fff",
@@ -141,136 +152,164 @@ function App() {
           </Map>
         </div>
 
-        <section className="building-info">
-          <section className="pois">
-            <header className="w-full text-[#160d44] bg-[#917cff] p-4">
-              <span className="icon">🏢</span>
-              <h3>INOVA USP</h3>
-            </header>
+        {!selectedBuilding && (
+          <div
+            style={{
+              fontStyle: "italic",
+              fontSize: "1.3rem",
+              height: "100%",
+              width: "100%",
+              marginTop: "1rem",
+              display: "grid",
+              placeItems: "center",
+              minHeight: "400px",
+            }}
+          >
+            Nenhum prédio selecionado
+          </div>
+        )}
 
-            <div className="poi-list">
-              {POIS_A.map((poi) => {
-                const imgPath = new URL(
-                  `./data/images/${poi.id}/front-photo.jpg`,
-                  import.meta.url,
-                ).href;
-                return (
-                  <div
-                    className={`card cursor-pointer rounded-xl border border-[#ededed] ${selectedPoiA && selectedPoiA.id == poi.id && "selected"}`}
-                    key={poi.id}
-                    onClick={() => {
-                      if (selectedPoiA && poi.id === selectedPoiA.id)
-                        setSelectedPoiA(null);
-                      if (!selectedPoiA || poi.id !== selectedPoiA.id)
-                        setSelectedPoiA(poi);
-                    }}
-                  >
-                    <img
-                      src={imgPath}
-                      alt="Esse é o alt dessa imagem"
-                      style={{ width: "100%", height: 150, objectFit: "cover" }}
-                    />
-                    <div className="body">
-                      <h2 className="nome">{poi.properties.name}</h2>
-                      <div className="andares" key={poi.id}>
-                        {poi.properties.floors.map((floor) => (
-                          <span className="border border-[#eccdb1]">
-                            {floor}º andar
-                          </span>
-                        ))}
-                      </div>
-                      <span>
-                        Área de {poi.properties.dimensions.length_meters} X{" "}
-                        {poi.properties.dimensions.width_meters} m
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </section>
+        {selectedBuilding && (
+          <section className="building-info">
+            <section className="pois">
+              <header className="w-full text-[#160d44] bg-[#917cff] p-4">
+                <span className="icon">🏢</span>
+                <h3>{selectedBuilding.properties.name}</h3>
+              </header>
 
-          {!selectedPoiA && (
-            <div
-              style={{
-                fontStyle: "italic",
-                fontSize: "1.3rem",
-                height: "100%",
-                width: "100%",
-                marginTop: "1rem",
-                display: "grid",
-                placeItems: "center",
-                minHeight: "400px",
-              }}
-            >
-              Nenhum item selecionado
-            </div>
-          )}
-
-          <div className="poi-info m-8">
-            {selectedPoiA && (
-              <div
-                className="cursor-pointer w-fit border-2 border-[#808080] text-[#5e5e5e] rounded-sm hover:bg-[#f0f0f0] rounded-8"
-                onClick={() => setSelectedPoiA(null)}
-              >
-                <X size={36} />
-              </div>
-            )}
-
-            {selectedPoiA && (
-              <div className="poi-a-descricao">
-                <h2>Elevador 1</h2>
-                <div className="img-lista">
-                  {["front-photo.jpg", "inside-photo.jpg"].map((filename) => {
+              <div className="poi-list">
+                {buildingPois &&
+                  buildingPois.map((poi) => {
                     const imgPath = new URL(
-                      `./data/images/${selectedPoiA.id}/${filename}`,
+                      `./data/images/${poi.id}/front-photo.jpg`,
                       import.meta.url,
                     ).href;
                     return (
-                      <img
-                        className="border-4 border-[#ffb179]"
-                        src={imgPath}
-                        alt="Minha imagem href"
-                      />
+                      <div
+                        className={`card cursor-pointer rounded-xl border border-[#ededed] ${selectedPoi && selectedPoi.id == poi.id && "selected"}`}
+                        key={poi.id}
+                        onClick={() => {
+                          if (selectedPoi && poi.id === selectedPoi.id)
+                            setSelectedPoi(null);
+                          if (!selectedPoi || poi.id !== selectedPoi.id)
+                            setSelectedPoi(poi);
+                        }}
+                      >
+                        <img
+                          src={imgPath}
+                          alt="Esse é o alt dessa imagem"
+                          style={{
+                            width: "100%",
+                            height: 150,
+                            objectFit: "cover",
+                          }}
+                        />
+                        <div className="body">
+                          <h2 className="nome">{poi.properties.name}</h2>
+                          <div className="andares">
+                            {poi.properties.floors.map((floor) => (
+                              <span
+                                key={floor}
+                                className="border border-[#eccdb1]"
+                              >
+                                {floor}º andar
+                              </span>
+                            ))}
+                          </div>
+                          <span>
+                            Área de {poi.properties.dimensions.length_meters} X{" "}
+                            {poi.properties.dimensions.width_meters} m
+                          </span>
+                        </div>
+                      </div>
                     );
                   })}
-                </div>
+              </div>
+            </section>
+
+            {!selectedPoi && (
+              <div
+                style={{
+                  fontStyle: "italic",
+                  fontSize: "1.3rem",
+                  height: "100%",
+                  width: "100%",
+                  marginTop: "1rem",
+                  display: "grid",
+                  placeItems: "center",
+                  minHeight: "400px",
+                }}
+              >
+                Nenhum item selecionado
               </div>
             )}
 
-            {selectedPoiA && (
-              <div className="instrucao-lista">
-                <h2>🧭 Rota visual</h2>
-                {selectedPoiA.properties.visual_route.map((direction) => {
-                  const imgPath = new URL(
-                    `./data/images/${selectedPoiA.id}/rota-visual/${direction.step_number}.png`,
-                    import.meta.url,
-                  ).href;
-                  return (
-                    <div className="instrucao" key={direction.step_number}>
-                      <header>
-                        <h3>{direction.title}</h3>
-                        <p>{direction.description}</p>
-                      </header>
-                      <img
-                        className="border-4 border-[#ffb179]"
-                        src={imgPath}
-                        alt="Esse é a imagem da instrução"
-                        style={{
-                          width: "100%",
-                          maxWidth: 400,
-                          height: 200,
-                          objectFit: "cover",
-                          borderRadius: 8,
-                        }}
-                      />
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        </section>
+            <div className="poi-info m-8">
+              {selectedPoi && (
+                <div
+                  className="cursor-pointer w-fit border-2 border-[#808080] text-[#5e5e5e] rounded-sm hover:bg-[#f0f0f0] rounded-8"
+                  onClick={() => setSelectedPoi(null)}
+                >
+                  <X size={36} />
+                </div>
+              )}
+
+              {selectedPoi && (
+                <div className="poi-a-descricao">
+                  <h2>Elevador 1</h2>
+                  <div className="img-lista">
+                    {["front-photo.jpg", "inside-photo.jpg"].map((filename) => {
+                      const imgPath = new URL(
+                        `./data/images/${selectedPoi.id}/${filename}`,
+                        import.meta.url,
+                      ).href;
+                      return (
+                        <img
+                          key={filename}
+                          className="border-4 border-[#ffb179]"
+                          src={imgPath}
+                          alt="Minha imagem href"
+                        />
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {selectedPoi && (
+                <div className="instrucao-lista">
+                  <h2>🧭 Rota visual</h2>
+                  {selectedPoi.properties.visual_route.map((direction) => {
+                    const imgPath = new URL(
+                      `./data/images/${selectedPoi.id}/rota-visual/${direction.step_number}.png`,
+                      import.meta.url,
+                    ).href;
+                    return (
+                      <div className="instrucao" key={direction.step_number}>
+                        <header>
+                          <h3>{direction.title}</h3>
+                          <p>{direction.description}</p>
+                        </header>
+                        <img
+                          className="border-4 border-[#ffb179]"
+                          src={imgPath}
+                          alt="Esse é a imagem da instrução"
+                          style={{
+                            width: "100%",
+                            maxWidth: 400,
+                            height: 200,
+                            objectFit: "cover",
+                            borderRadius: 8,
+                          }}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </section>
+        )}
       </div>
     </div>
   );

@@ -1,8 +1,18 @@
-[
-  {
-    "id": "inova-usp",
-    "nome": "Inova USP",
-    "ponto_central": [-23.5574559, -46.72746],
-    "tipo": "predio"
-  }
-]
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "id": "inova-usp",
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-46.72746, -23.5574559]
+      },
+      "properties": {
+        "id": "inova-usp",
+        "type": "building",
+        "name": "Inova USP"
+      }
+    }
+  ]
+}
