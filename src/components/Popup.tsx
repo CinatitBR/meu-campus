@@ -5,11 +5,17 @@ interface PopupProps {
   isOpen: boolean;
   description: string;
   img: string;
+  date: string;
   onClose: () => void;
 }
 
-export function Popup({ isOpen, description, img, onClose }: PopupProps) {
+export function Popup({ isOpen, description, img, date, onClose }: PopupProps) {
   const popupRef = useRef<HTMLDivElement>(null);
+  const formattedDate = new Date(date).toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -53,11 +59,10 @@ export function Popup({ isOpen, description, img, onClose }: PopupProps) {
           <p className="text-gray-700 leading-relaxed text-sm pr-8">
             {description}
           </p>
-          <img
-            src={img}
-            alt={description}
-            className="mt-4 rounded-md shadow-md"
-          />
+          <img src={img} alt={description} className="mt-4 rounded-md" />
+          <span className="text-gray-500 text-sm block mt-2">
+            data &middot; {formattedDate}
+          </span>
         </div>
       </div>
     </>

@@ -329,6 +329,7 @@ function App() {
         isOpen={!!selectedSurfaceMarker}
         description={selectedSurfaceMarker?.properties?.description || ""}
         img={`${BASE_URL}images/surface-points/${selectedSurfaceMarker?.properties?.id}/photo.jpg`}
+        date={selectedSurfaceMarker?.properties?.created_at || ""}
         onClose={() => setSelectedSurfaceMarker(null)}
       />
     </div>
