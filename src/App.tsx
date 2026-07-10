@@ -5,6 +5,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 
 import { X } from "lucide-react";
 
+import { Popup } from "./components/Popup";
 import POIS_A from "./data/pois-a.json";
 import PREDIOS from "./data/predios.json";
 import SURFACE_DATA from "./data/surface-points.json";
@@ -23,6 +24,9 @@ function App() {
   const [buildingPois, setBuildingPois] = useState<PoiA[] | null>(null);
   const [selectedPoi, setSelectedPoi] = useState<PoiA | null>(null);
   const [currentZoom, setCurrentZoom] = useState<number>(18);
+  const [selectedSurfaceMarker, setSelectedSurfaceMarker] = useState<any | null>(
+    null
+  );
 
   const INTERACTIVE_LAYERS = [
     "poi_r20",
@@ -121,7 +125,10 @@ function App() {
                     longitude={longitude}
                     anchor="bottom"
                   >
-                    <div className="w-12 h-12 rounded-full overflow-hidden shadow-md bg-white cursor-pointer p-[3px]">
+                    <div
+                      className="w-12 h-12 rounded-full overflow-hidden shadow-md bg-white cursor-pointer p-[3px] hover:ring-2 hover:ring-[#917cff] transition-all"
+                      onClick={() => setSelectedSurfaceMarker(feature)}
+                    >
                       <img
                         src={thumbnail_url}
                         alt="Piso"
@@ -299,6 +306,12 @@ function App() {
           </section>
         )}
       </div>
+
+      <Popup
+        isOpen={!!selectedSurfaceMarker}
+        description={selectedSurfaceMarker?.properties?.description || ""}
+        onClose={() => setSelectedSurfaceMarker(null)}
+      />
     </div>
   );
 }
