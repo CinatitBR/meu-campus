@@ -36,7 +36,7 @@ export function Popup({ isOpen, description, img, onClose }: PopupProps) {
       <div className="fixed inset-0 bg-black/30 z-40 pointer-events-none" />
       <div
         ref={popupRef}
-        className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-white rounded-lg shadow-2xl p-6 max-w-sm w-11/12 border border-[#ededed] animate-in fade-in zoom-in-95 duration-200 pointer-events-auto"
+        className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-white rounded-lg shadow-2xl p-6 max-w-xl w-11/12 border border-[#ededed] animate-in fade-in zoom-in-95 duration-200 pointer-events-auto"
       >
         <button
           onClick={onClose}
@@ -46,11 +46,13 @@ export function Popup({ isOpen, description, img, onClose }: PopupProps) {
           <X size={24} className="text-gray-600" />
         </button>
 
-        <div className="pr-8">
-          <h3 className="text-lg font-semibold text-[#160d44] mb-3">
+        <div>
+          <h3 className="text-lg font-semibold text-[#160d44] mb-3 pr-8">
             Descrição da Superfície
           </h3>
-          <p className="text-gray-700 leading-relaxed text-sm">{description}</p>
+          <p className="text-gray-700 leading-relaxed text-sm pr-8">
+            {description}
+          </p>
           <img
             src={img}
             alt={description}

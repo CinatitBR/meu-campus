@@ -11,6 +11,14 @@ import PREDIOS from "./data/predios.json";
 import SURFACE_DATA from "./data/surface-points.json";
 const inova = PREDIOS.features[0];
 
+// Bounding box format: [Southwest Lng, Southwest Lat], Northeast Lng, Northeast Lat]
+const CAMPUS_BOUNDS: [number, number, number, number] = [
+  -46.745496,
+  -23.572641, // Southwest corner
+  -46.710219,
+  -23.549471, // Northeast corner
+];
+
 type PoiA = (typeof POIS_A)[0];
 const BASE_URL = import.meta.env.BASE_URL || "/"; // Use the base URL from Vite's environment variables, defaulting to "/"
 
@@ -74,11 +82,13 @@ function App() {
             initialViewState={{
               longitude: inova.geometry.coordinates[0],
               latitude: inova.geometry.coordinates[1],
-              zoom: 18,
+              zoom: 16,
             }}
             style={{ width: "100%", height: "100%" }}
             mapStyle="https://tiles.openfreemap.org/styles/bright"
             onZoom={(e) => setCurrentZoom(e.viewState.zoom)}
+            minZoom={16}
+            maxBounds={CAMPUS_BOUNDS}
             // 1. Escuta cliques apenas nas camadas de prédios
             interactiveLayerIds={INTERACTIVE_LAYERS}
             onClick={handleMapClick}
@@ -96,9 +106,11 @@ function App() {
                 id="poi_own"
                 type="symbol"
                 layout={{
+                  "icon-image": "college",
+                  "icon-size": 1,
                   "text-field": ["get", "name"],
                   "text-anchor": "top",
-                  "text-offset": [0, 1.5],
+                  "text-offset": [0, 0.5],
                 }}
                 minzoom={16}
                 paint={{
