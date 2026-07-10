@@ -4,10 +4,11 @@ import { useEffect, useRef } from "react";
 interface PopupProps {
   isOpen: boolean;
   description: string;
+  img: string;
   onClose: () => void;
 }
 
-export function Popup({ isOpen, description, onClose }: PopupProps) {
+export function Popup({ isOpen, description, img, onClose }: PopupProps) {
   const popupRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -50,6 +51,11 @@ export function Popup({ isOpen, description, onClose }: PopupProps) {
             Descrição da Superfície
           </h3>
           <p className="text-gray-700 leading-relaxed text-sm">{description}</p>
+          <img
+            src={img}
+            alt={description}
+            className="mt-4 rounded-md shadow-md"
+          />
         </div>
       </div>
     </>

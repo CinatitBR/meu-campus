@@ -12,6 +12,7 @@ import SURFACE_DATA from "./data/surface-points.json";
 const inova = PREDIOS.features[0];
 
 type PoiA = (typeof POIS_A)[0];
+const BASE_URL = import.meta.env.BASE_URL || "/"; // Use the base URL from Vite's environment variables, defaulting to "/"
 
 // // Define your GeoJSON data
 // const geojsonSource = {
@@ -24,9 +25,11 @@ function App() {
   const [buildingPois, setBuildingPois] = useState<PoiA[] | null>(null);
   const [selectedPoi, setSelectedPoi] = useState<PoiA | null>(null);
   const [currentZoom, setCurrentZoom] = useState<number>(18);
-  const [selectedSurfaceMarker, setSelectedSurfaceMarker] = useState<any | null>(
-    null
-  );
+  const [selectedSurfaceMarker, setSelectedSurfaceMarker] = useState<
+    any | null
+  >(null);
+
+  console.log(selectedSurfaceMarker);
 
   const INTERACTIVE_LAYERS = [
     "poi_r20",
@@ -113,11 +116,11 @@ function App() {
             {currentZoom >= 16 &&
               SURFACE_DATA.features.map((feature) => {
                 const [longitude, latitude] = feature.geometry.coordinates;
-                const thumbnail_url = new URL(
-                  `./data/images/surface-points/${feature.properties.id}/photo.jpg`,
-                  import.meta.url,
-                ).href;
-
+                // const thumbnail_url = new URL(
+                //   `./data${}/images/surface-points/${feature.properties.id}/photo.jpg`,
+                //   import.meta.url,
+                // ).href;
+                const thumbnail_url = `${BASE_URL}images/surface-points/${feature.properties.id}/photo.jpg`;
                 return (
                   <Marker
                     key={feature.properties.id}
@@ -169,10 +172,11 @@ function App() {
               <div className="poi-list">
                 {buildingPois &&
                   buildingPois.map((poi) => {
-                    const imgPath = new URL(
-                      `./data/images/${poi.properties.id}/front-photo.jpg`,
-                      import.meta.url,
-                    ).href;
+                    // const imgPath = new URL(
+                    //   `./data${}/images/${poi.properties.id}/front-photo.jpg`,
+                    //   import.meta.url,
+                    // ).href;
+                    const imgPath = `${BASE_URL}images/${poi.properties.id}/front-photo.jpg`;
                     return (
                       <div
                         className={`card cursor-pointer rounded-xl border border-[#ededed] ${selectedPoi && selectedPoi.properties.id == poi.properties.id && "selected"}`}
@@ -254,10 +258,11 @@ function App() {
                   <h2>Elevador 1</h2>
                   <div className="img-lista">
                     {["front-photo.jpg", "inside-photo.jpg"].map((filename) => {
-                      const imgPath = new URL(
-                        `./data/images/${selectedPoi.properties.id}/${filename}`,
-                        import.meta.url,
-                      ).href;
+                      // const imgPath = new URL(
+                      //   `${}/images/${selectedPoi.properties.id}/${filename}`,
+                      //   import.meta.url,
+                      // ).href;
+                      const imgPath = `${BASE_URL}images/${selectedPoi.properties.id}/${filename}`;
                       return (
                         <img
                           key={filename}
@@ -275,10 +280,11 @@ function App() {
                 <div className="instrucao-lista">
                   <h2>🧭 Rota visual</h2>
                   {selectedPoi.properties.visual_route.map((direction) => {
-                    const imgPath = new URL(
-                      `./data/images/${selectedPoi.properties.id}/rota-visual/${direction.step_number}.png`,
-                      import.meta.url,
-                    ).href;
+                    // const imgPath = new URL(
+                    //   `${}/images/${selectedPoi.properties.id}/rota-visual/${direction.step_number}.png`,
+                    //   import.meta.url,
+                    // ).href;
+                    const imgPath = `${BASE_URL}images/${selectedPoi.properties.id}/rota-visual/${direction.step_number}.png`;
                     return (
                       <div className="instrucao" key={direction.step_number}>
                         <header>
@@ -310,6 +316,7 @@ function App() {
       <Popup
         isOpen={!!selectedSurfaceMarker}
         description={selectedSurfaceMarker?.properties?.description || ""}
+        img={`${BASE_URL}images/surface-points/${selectedSurfaceMarker?.properties?.id}/photo.jpg`}
         onClose={() => setSelectedSurfaceMarker(null)}
       />
     </div>
