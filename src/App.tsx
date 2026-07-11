@@ -74,10 +74,7 @@ function App() {
   return (
     <div className="app">
       <div className="right">
-        <div
-          className="map border border-[#ededed] m-4"
-          style={{ height: "80svh", overflow: "hidden", borderRadius: "1rem" }}
-        >
+        <div className="map border border-[#ededed] rounded-lg h-[80svh] overflow-hidden">
           <Map
             initialViewState={{
               longitude: inova.geometry.coordinates[0],
@@ -87,7 +84,7 @@ function App() {
             style={{ width: "100%", height: "100%" }}
             mapStyle="https://tiles.openfreemap.org/styles/liberty"
             onZoom={(e) => setCurrentZoom(e.viewState.zoom)}
-            minZoom={16}
+            // minZoom={16}
             maxBounds={CAMPUS_BOUNDS}
             // 1. Escuta cliques apenas nas camadas de prédios
             interactiveLayerIds={INTERACTIVE_LAYERS}
@@ -112,7 +109,7 @@ function App() {
                   "text-anchor": "top",
                   "text-offset": [0, 0.5],
                 }}
-                minzoom={16}
+                minzoom={14}
                 paint={{
                   "text-color": "#333333",
                 }}
@@ -125,7 +122,7 @@ function App() {
                 paint={{ "circle-radius": 10, "circle-color": "#ff0055" }}
               />
             </Source>
-            {currentZoom >= 16 &&
+            {currentZoom >= 14 &&
               SURFACE_DATA.features.map((feature) => {
                 const [longitude, latitude] = feature.geometry.coordinates;
                 // const thumbnail_url = new URL(
