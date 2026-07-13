@@ -30,3 +30,14 @@ If you are developing a production application, we recommend enabling type-aware
 ```
 
 See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+
+## Data schema
+
+Currently, all the data is stored in JSON files. Spatial data uses the GeoJSON format.
+
+List of spatial elements:
+
+- Buildings: Polygon geometry. Represent a building.
+- Poi (rest area, elevator): Point geometry. Represent different classes of POIs (Point of Interest), like rest area or elevator.
+- Surface paths: its a LineString geometry. Represents a surface pattern.
+- Surface obstructions: Point geometry. Represents an obstruction (like a hole) in a surface. Might be associated to a surface path element.
