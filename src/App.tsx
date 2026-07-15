@@ -3,6 +3,10 @@ import { Map, Marker, Source, Layer } from "@vis.gl/react-maplibre";
 import type { MapLayerMouseEvent } from "@vis.gl/react-maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
 
+import { useClusters } from "./useClusters";
+import { ClusterThumbnail } from "./ClusterThumbnail";
+import type { ClusterFeature } from "./useClusters";
+
 import { X } from "lucide-react";
 
 import { Popup } from "./components/Popup";
@@ -40,6 +44,20 @@ function App() {
     null,
   );
 
+  const [activeCluster, setActiveCluster] = useState<{
+    cluster: ClusterFeature;
+    screenX: number;
+    screenY: number;
+  } | null>(null);
+
+  const clusterFeatures = SURFACE_SAMPLES.features.map((f) => ({
+    id: f.properties.id,
+    coordinates: f.geometry.coordinates as [number, number],
+    properties: f.properties,
+  }));
+
+  // const clusters = useClusters(clusterFeatures, 50);
+
   console.log(selectedSurface);
 
   const INTERACTIVE_LAYERS = [
@@ -57,6 +75,8 @@ function App() {
   };
 
   const handleMapClick = (event: MapLayerMouseEvent) => {
+    setActiveCluster(null);
+
     // Verifica se há features sob o ponto onde o usuário clicou
     const features = event.features;
     if (!features || features.length === 0) return;
@@ -78,6 +98,26 @@ function App() {
     <div className="app">
       <div className="right">
         <div className="map border border-[#ededed] rounded-lg h-[80svh] overflow-hidden">
+          {activeCluster && (
+            <ClusterThumbnail
+              feature={activeCluster.cluster}
+              baseUrl={BASE_URL}
+              anchorScreenX={activeCluster.screenX}
+              anchorScreenY={activeCluster.screenY}
+              onClose={() => setActiveCluster(null)}
+              onSelectSample={(sampleId) => {
+                // Encontra o feature original e abre o painel lateral existente
+                const feature = SURFACE_SAMPLES.features.find(
+                  (f) => f.properties.id === sampleId,
+                );
+                if (feature) {
+                  setSelectedSurface(feature as any);
+                  setActiveCluster(null);
+                }
+              }}
+            />
+          )}
+
           <Map
             initialViewState={{
               longitude: inova.geometry.coordinates[0],
@@ -142,9 +182,14 @@ function App() {
               />
             </Source>
             {currentZoom >= 14 &&
-              SURFACE_SAMPLES.features.map((feature) => {
-                const [longitude, latitude] = feature.geometry.coordinates; // TODO: calculate the center of the path (using library like turf)
-                const thumbnail_url = `${BASE_URL}images/surface-points/${feature.properties.id}/photo.jpg`;
+              clusterFeatures.map((feature) => {
+                const [longitude, latitude] = feature.coordinates;
+                const representativeId = feature.properties.id;
+                const thumbnail_url = `${BASE_URL}images/surface-points/${representativeId}/photo.jpg`;
+                const isActive =
+                  activeCluster?.cluster.id === feature.properties.id;
+                // const hasMultiple = cluster.members.length > 1;
+
                 return (
                   <Marker
                     key={feature.properties.id}
@@ -154,15 +199,42 @@ function App() {
                   >
                     <div className="flex flex-col items-center">
                       <div
-                        className="w-12 h-12 rounded-full overflow-hidden shadow-md bg-white cursor-pointer p-[3px] hover:ring-2 hover:ring-[#917cff] transition-all"
-                        onClick={() => setSelectedSurface(feature)}
+                        className={`
+              relative shadow-md bg-white cursor-pointer
+              transition-all
+              w-12 h-12 rounded-full p-[3px]
+              ${
+                isActive
+                  ? "ring-2 ring-[#917cff]"
+                  : "hover:ring-2 hover:ring-[#917cff]"
+              }
+            `}
+                        onClick={(e) => {
+                          const rect =
+                            (e.currentTarget as HTMLElement)
+                              .closest("[style]")
+                              ?.getBoundingClientRect() ??
+                            (
+                              e.currentTarget as HTMLElement
+                            ).getBoundingClientRect();
+                          setActiveCluster({
+                            cluster: feature,
+                            screenX: rect.left + rect.width / 2,
+                            screenY: rect.top,
+                          });
+                          // Não propaga para o mapa (evita fechar imediatamente)
+                          e.stopPropagation();
+                        }}
                       >
+                        {/* Foto principal (representativa do cluster) */}
                         <img
                           src={thumbnail_url}
-                          alt="Piso"
-                          className="rounded-full w-full h-full object-cover"
+                          alt="Superfície"
+                          className={`w-full h-full object-cover rounded-full`}
                         />
                       </div>
+
+                      {/* Seta do marcador */}
                       <div className="mt-[0.8px] w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[8px] border-t-[#b2a4f8]" />
                     </div>
                   </Marker>

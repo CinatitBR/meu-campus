@@ -53,15 +53,13 @@ export function Popup({ isOpen, description, img, date, onClose }: PopupProps) {
         </button>
 
         <div>
-          <h3 className="text-lg font-semibold text-[#160d44] mb-3 pr-8">
+          <h3 className="text-sm text-gray-700 font-semibold text-[#160d44] mb-1 pr-8">
             Descrição da Superfície
           </h3>
-          <p className="text-gray-700 leading-relaxed text-sm pr-8">
-            {description}
-          </p>
-          <img src={img} alt={description} className="mt-4 rounded-md" />
+          <p className="text-gray-700 text-lg pr-8">{description}</p>
+          <img src={img} alt={description} className="mt-2 rounded-md" />
           <span className="text-gray-500 text-sm block mt-2">
-            data &middot; {formattedDate}
+            {formattedDate}
           </span>
         </div>
       </div>

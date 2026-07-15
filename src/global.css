@@ -69,13 +69,13 @@
   box-sizing: border-box;
 }
 
-h1,
+/* h1,
 h2,
 h3,
 p,
 body {
   margin: 0;
-}
+} */
 
 h1,
 h2,
@@ -87,9 +87,9 @@ body {
   background-color: white;
 }
 
-h3 {
+/* h3 {
   font-size: 1.3rem;
-}
+} */
 
 .app {
   width: 100%;
