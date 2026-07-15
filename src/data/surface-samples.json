@@ -29,6 +29,19 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
+        "coordinates": [-46.736279, -23.560738]
+      },
+      "properties": {
+        "id": "surface-point-103",
+        "category": "surface_point",
+        "updated_at": "2026-07-08T17:00:00.000Z",
+        "description": "Passagem de concreto por cima da grama, com a lateral quebrada e despedaçada."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
         "coordinates": [-46.728325, -23.561705]
       },
       "properties": {

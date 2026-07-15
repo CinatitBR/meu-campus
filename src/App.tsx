@@ -3,7 +3,6 @@ import { Map, Marker, Source, Layer } from "@vis.gl/react-maplibre";
 import type { MapLayerMouseEvent } from "@vis.gl/react-maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
 
-import { useClusters } from "./useClusters";
 import { ClusterThumbnail } from "./ClusterThumbnail";
 import type { ClusterFeature } from "./useClusters";
 
