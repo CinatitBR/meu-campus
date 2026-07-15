@@ -39,5 +39,43 @@ List of spatial elements:
 
 - Buildings: Polygon geometry. Represent a building.
 - Poi (rest area, elevator): Point geometry. Represent different classes of POIs (Point of Interest), like rest area or elevator.
-- Surface paths: its a LineString geometry. Represents a surface pattern.
+- Surface sample: Point. Describes a walkable surface. Image of the surface + properties.
 - Surface obstructions: Point geometry. Represents an obstruction (like a hole) in a surface. Might be associated to a surface path element.
+
+---
+
+surface snapshot: Point geometry. Describes a walkable surface. Image of the surface + properties. Surface snapshot schema:
+
+```json
+{
+  "type": "Feature",
+  "geometry": {
+    "type": "Point",
+    "coordinates": [-46.728325, -23.561705]
+  },
+  "properties": {
+    "id": "surface-point-104",
+    "updated_at": "2026-07-08T17:00:00.000Z",
+    "description": "Passagem de concreto estreita, por cima da grama, feita de concreto remendado levemente irregular."
+  }
+}
+```
+
+Funcionalidade: descrever o aspecto de uma região caminhável no campus.
+
+Funcionamento: dar zoom em uma superfície caminhável do mapa. Várias imagens aparecem conectadas. Elas descrevem a aparência geral daquela região:
+
+Implementação:
+
+- cada imagem é um surface_snapshot, armazenado individualmente em surface-snapshots.json.
+- no arquivo surface_samples.json serão armazenados os surface samples, que são conjuntos de surface_snapshots, que são agrupados a partir de seus ids.
+  Schema de um surface sample:
+
+```json
+{
+  [
+    "id": "surface-sample-101",
+    "sample": ["surface-point-104", "surface-point-105", "surface-point-106"]
+  ]
+}
+```
