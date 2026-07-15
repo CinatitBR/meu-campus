@@ -152,15 +152,18 @@ function App() {
                     latitude={latitude}
                     anchor="bottom"
                   >
-                    <div
-                      className="w-12 h-12 rounded-full overflow-hidden shadow-md bg-white cursor-pointer p-[3px] hover:ring-2 hover:ring-[#917cff] transition-all"
-                      onClick={() => setSelectedSurface(feature)}
-                    >
-                      <img
-                        src={thumbnail_url}
-                        alt="Piso"
-                        className="rounded-full w-full h-full object-cover"
-                      />
+                    <div className="flex flex-col items-center">
+                      <div
+                        className="w-12 h-12 rounded-full overflow-hidden shadow-md bg-white cursor-pointer p-[3px] hover:ring-2 hover:ring-[#917cff] transition-all"
+                        onClick={() => setSelectedSurface(feature)}
+                      >
+                        <img
+                          src={thumbnail_url}
+                          alt="Piso"
+                          className="rounded-full w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="mt-[0.8px] w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[8px] border-t-[#b2a4f8]" />
                     </div>
                   </Marker>
                 );
