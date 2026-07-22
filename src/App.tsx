@@ -3,7 +3,6 @@ import { Map, Marker, Source, Layer } from "@vis.gl/react-maplibre";
 import type { MapLayerMouseEvent } from "@vis.gl/react-maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
 
-import { useClusters } from "./useClusters";
 import { ClusterThumbnail } from "./ClusterThumbnail";
 import type { ClusterFeature } from "./useClusters";
 
@@ -15,6 +14,7 @@ import BUILDINGS from "./data/buildings.json";
 // import SURFACE_DATA from "./data/surface-points.json";
 // import SURFACE_PATHS from "./data/surface-paths.json";
 import SURFACE_SAMPLES from "./data/surface-samples.json";
+import WAYS from "./data/ways.json";
 
 const inova = BUILDINGS.features[0];
 // Bounding box format: [Southwest Lng, Southwest Lat], Northeast Lng, Northeast Lat]
@@ -24,6 +24,20 @@ const CAMPUS_BOUNDS: [number, number, number, number] = [
   -46.710219,
   -23.549471, // Northeast corner
 ];
+
+// feat.id = "way/152732609"
+const MY_WAY = WAYS.features.find((f) => f.id === "way/152732609");
+const ANOTHER_WAY = WAYS.features.find((f) => f.id === "way/422971161");
+
+const WAYS_GEOJSON =
+  MY_WAY && ANOTHER_WAY
+    ? { type: "FeatureCollection", features: [MY_WAY, ANOTHER_WAY] }
+    : { type: "FeatureCollection", features: [] };
+
+console.log("WAYS_GEOJSON", WAYS_GEOJSON);
+
+const START_LON = inova.geometry.coordinates[0];
+const START_LAT = inova.geometry.coordinates[1];
 
 type PoiA = (typeof POIS_A)[0];
 type SurfaceSample = (typeof SURFACE_SAMPLES)["features"][0];
@@ -43,6 +57,7 @@ function App() {
   const [selectedSurface, setSelectedSurface] = useState<SurfaceSample | null>(
     null,
   );
+  const [clickedLineId, setClickedLineId] = useState<string | null>("");
 
   const [activeCluster, setActiveCluster] = useState<{
     cluster: ClusterFeature;
@@ -56,9 +71,22 @@ function App() {
     properties: f.properties,
   }));
 
-  // const clusters = useClusters(clusterFeatures, 50);
+  const [viewState, setViewState] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
 
-  console.log(selectedSurface);
+    let lat = START_LAT;
+    let lon = START_LON;
+    if (params.has("lat") && params.has("lon")) {
+      lat = parseFloat(params.get("lat") || "");
+      lon = parseFloat(params.get("lon") || "");
+    }
+
+    return {
+      longitude: lon, // Default longitude
+      latitude: lat, // Default latitude
+      zoom: 17,
+    };
+  });
 
   const INTERACTIVE_LAYERS = [
     "poi_r20",
@@ -66,6 +94,7 @@ function App() {
     "poi_r1",
     "poi_transit",
     "poi_own",
+    "way-fill",
   ];
 
   // Define your GeoJSON data
@@ -83,15 +112,23 @@ function App() {
 
     const clickedFeature = features[0];
 
-    // Busca no seu JSON local se você tem informações estendidas para esse prédio
-    const buildingPois = POIS_A.filter((poi) => {
-      return (
-        poi.properties.parent_building_id === clickedFeature.properties?.id
-      );
-    });
+    switch (clickedFeature.layer.id) {
+      case "way-fill":
+        console.log("Clicked on a way:", clickedFeature);
+        setClickedLineId(clickedFeature.properties["@id"] || "");
+        break;
+      default:
+        // Busca no seu JSON local se você tem informações estendidas para esse prédio
+        const buildingPois = POIS_A.filter((poi) => {
+          return (
+            poi.properties.parent_building_id === clickedFeature.properties?.id
+          );
+        });
 
-    setSelectedBuilding(clickedFeature);
-    if (buildingPois.length > 0) setBuildingPois(buildingPois);
+        setSelectedBuilding(clickedFeature);
+        if (buildingPois.length > 0) setBuildingPois(buildingPois);
+        break;
+    }
   };
 
   return (
@@ -119,10 +156,25 @@ function App() {
           )}
 
           <Map
-            initialViewState={{
-              longitude: inova.geometry.coordinates[0],
-              latitude: inova.geometry.coordinates[1],
-              zoom: 16,
+            initialViewState={viewState}
+            onLoad={(event) => {
+              const map = event.target;
+              const tiles = [
+                {
+                  name: "concreto-escuro",
+                  url: `${BASE_URL}images/tiles/concreto-escuro.png`,
+                },
+                {
+                  name: "pedregulho",
+                  url: `${BASE_URL}images/tiles/pedregulho.png`,
+                },
+              ];
+
+              tiles.forEach((tile) => {
+                map.loadImage(tile.url).then((res) => {
+                  map.addImage(tile.name, res.data);
+                });
+              });
             }}
             style={{ width: "100%", height: "100%" }}
             mapStyle="https://tiles.openfreemap.org/styles/liberty"
@@ -140,6 +192,58 @@ function App() {
               e.target.getCanvas().style.cursor = "";
             }}
           >
+            {/* == WAY == */}
+            {currentZoom >= 18 && (
+              <Source id="path-source" type="geojson" data={WAYS}>
+                <Layer
+                  beforeId="building"
+                  id="way-fill"
+                  type="line"
+                  source="path-source"
+                  paint={{
+                    // "line-pattern": "concreto-escuro",
+                    "line-pattern": [
+                      "match",
+                      ["get", "surface"],
+                      "asphalt",
+                      "concreto-escuro",
+                      "paving_stones",
+                      "pedregulho",
+                      "",
+                    ],
+                    "line-width": 30,
+                    "line-opacity": [
+                      "case",
+                      ["==", ["get", "@id"], clickedLineId || ""],
+                      1, // Opacity when clicked
+                      0.3, // Default opacity
+                    ],
+                  }}
+                  layout={{
+                    "line-cap": "round",
+                  }}
+                />
+              </Source>
+            )}
+
+            {/* <Source id="my-way-source" type="geojson" data={WAYS_GEOJSON}>
+              <Layer
+                id="my-way-layer"
+                type="line"
+                paint={{
+                  "line-color": "#0000ff",
+                  "line-width": 6,
+                  "line-opacity": 0.9,
+                }}
+                layout={{
+                  "line-join": "round",
+                  "line-cap": "round",
+                }}
+              />
+            </Source> */}
+
+            {/* == WAY == */}
+
             <Source id="my-poi-source" type="geojson" data={BUILDINGS}>
               <Layer
                 id="poi_own"
