@@ -71,7 +71,7 @@ function App() {
     properties: f.properties,
   }));
 
-  const [viewState, setViewState] = useState(() => {
+  const getViewState = () => {
     const params = new URLSearchParams(window.location.search);
 
     let lat = START_LAT;
@@ -86,7 +86,7 @@ function App() {
       latitude: lat, // Default latitude
       zoom: 17,
     };
-  });
+  };
 
   const INTERACTIVE_LAYERS = [
     "poi_r20",
@@ -156,7 +156,7 @@ function App() {
           )}
 
           <Map
-            initialViewState={viewState}
+            initialViewState={getViewState()}
             onLoad={(event) => {
               const map = event.target;
               const tiles = [
