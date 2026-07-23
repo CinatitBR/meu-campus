@@ -94,7 +94,7 @@ function App() {
     "poi_r1",
     "poi_transit",
     "poi_own",
-    "way-fill",
+    "way-fill-base",
   ];
 
   // Define your GeoJSON data
@@ -113,7 +113,7 @@ function App() {
     const clickedFeature = features[0];
 
     switch (clickedFeature.layer.id) {
-      case "way-fill":
+      case "way-fill-base":
         console.log("Clicked on a way:", clickedFeature);
         setClickedLineId(clickedFeature.properties["@id"] || "");
         break;
@@ -195,13 +195,35 @@ function App() {
             {/* == WAY == */}
             {currentZoom >= 18 && (
               <Source id="path-source" type="geojson" data={WAYS}>
+                {/* 1. Base Layer (Always visible at low opacity) */}
                 <Layer
                   beforeId="building"
-                  id="way-fill"
+                  id="way-fill-base"
                   type="line"
-                  source="path-source"
                   paint={{
-                    // "line-pattern": "concreto-escuro",
+                    "line-pattern": [
+                      "match",
+                      ["get", "surface"],
+                      "asphalt",
+                      "concreto-escuro",
+                      "paving_stones",
+                      "pedregulho",
+                      "",
+                    ],
+                    "line-width": 18,
+                    "line-opacity": 0.3, // Constant global value
+                  }}
+                  layout={{ "line-cap": "round" }}
+                />
+
+                {/* 2. Highlight Layer (Only shows the active feature) */}
+                <Layer
+                  beforeId="building"
+                  id="way-fill-highlight"
+                  type="line"
+                  // Use filter to isolate the selected line feature
+                  filter={["==", ["get", "@id"], clickedLineId || ""]}
+                  paint={{
                     "line-pattern": [
                       "match",
                       ["get", "surface"],
@@ -212,35 +234,11 @@ function App() {
                       "",
                     ],
                     "line-width": 30,
-                    "line-opacity": [
-                      "case",
-                      ["==", ["get", "@id"], clickedLineId || ""],
-                      1, // Opacity when clicked
-                      0.3, // Default opacity
-                    ],
                   }}
-                  layout={{
-                    "line-cap": "round",
-                  }}
+                  layout={{ "line-cap": "round" }}
                 />
               </Source>
             )}
-
-            {/* <Source id="my-way-source" type="geojson" data={WAYS_GEOJSON}>
-              <Layer
-                id="my-way-layer"
-                type="line"
-                paint={{
-                  "line-color": "#0000ff",
-                  "line-width": 6,
-                  "line-opacity": 0.9,
-                }}
-                layout={{
-                  "line-join": "round",
-                  "line-cap": "round",
-                }}
-              />
-            </Source> */}
 
             {/* == WAY == */}
 
