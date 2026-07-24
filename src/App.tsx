@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Map, Marker, Source, Layer } from "@vis.gl/react-maplibre";
 import type {
   MapLayerMouseEvent,
@@ -68,7 +68,6 @@ function App() {
   const [clickedLine, setClickedLine] = useState<MapGeoJSONFeature | null>(
     null,
   );
-
   const [activeCluster, setActiveCluster] = useState<{
     cluster: ClusterFeature;
     screenX: number;
@@ -115,6 +114,7 @@ function App() {
 
   const handleMapClick = (event: MapLayerMouseEvent) => {
     setActiveCluster(null);
+    setClickedLine(null);
 
     // Verifica se há features sob o ponto onde o usuário clicou
     const features = event.features;
@@ -147,6 +147,39 @@ function App() {
   const bufferedWay = clickedLine
     ? turf.buffer(clickedLine, 5, { units: "meters" })
     : null;
+
+  // 2. React to clickedLine state shifts
+  useEffect(() => {
+    const map = mapRef.current?.getMap();
+    if (!map) return;
+
+    // We must ensure the style/layers have loaded before setting properties
+    const updateVisibility = () => {
+      const targetLayers = [
+        "poi_r20",
+        "poi_r7",
+        "poi_r1",
+        "poi_transit",
+        "poi_own",
+        "way-fill-base",
+        "building-3d",
+      ]; // Layers to be hidden when a line is clicked
+
+      targetLayers.forEach((targetLayer) => {
+        if (map.getLayer(targetLayer)) {
+          // Hide if clickedLine is NOT null, otherwise show it
+          const visibilityValue = clickedLine !== null ? "none" : "visible";
+          map.setLayoutProperty(targetLayer, "visibility", visibilityValue);
+        }
+      });
+    };
+
+    if (map.isStyleLoaded()) {
+      updateVisibility();
+    } else {
+      map.once("idle", updateVisibility);
+    }
+  }, [clickedLine]);
 
   return (
     <div className="app">
@@ -213,19 +246,34 @@ function App() {
             {/* == WAY == */}
             {currentZoom >= 18 && (
               <>
-                <Source id="way-box-source" type="geojson" data={bufferedWay}>
+                <Source
+                  id="way-box-source"
+                  type="geojson"
+                  data={{
+                    type: "FeatureCollection",
+                    features: bufferedWay ? [bufferedWay] : [],
+                  }}
+                >
                   <Layer
                     id="way-3d-block"
                     type="fill-extrusion"
                     paint={{
                       // "fill-extrusion-color": "#917cff",
-                      "fill-extrusion-pattern": "concreto-escuro",
                       "fill-extrusion-opacity": 0.9,
                       // 1. The altitude where the BOTTOM of the shape begins (meters above ground)
                       "fill-extrusion-base": 10,
                       // 2. The altitude where the TOP of the shape ends (meters above ground)
                       // If this is 4, your floating path will be exactly 1 meter thick.
-                      "fill-extrusion-height": 13,
+                      "fill-extrusion-height": 12,
+                      "fill-extrusion-pattern": [
+                        "match",
+                        ["get", "surface"],
+                        "asphalt",
+                        "concreto-escuro",
+                        "paving_stones",
+                        "pedregulho",
+                        "",
+                      ],
                     }}
                   />
                 </Source>
