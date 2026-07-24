@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.2",
+    "@turf/buffer": "^7.3.5",
     "@vis.gl/react-maplibre": "^8.1.1",
     "lucide-react": "^1.23.0",
     "maplibre-gl": "^5.24.0",

@@ -1,6 +1,11 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Map, Marker, Source, Layer } from "@vis.gl/react-maplibre";
-import type { MapLayerMouseEvent } from "@vis.gl/react-maplibre";
+import type {
+  MapLayerMouseEvent,
+  MapGeoJSONFeature,
+  MapRef,
+} from "@vis.gl/react-maplibre";
+import * as turf from "@turf/buffer";
 import "maplibre-gl/dist/maplibre-gl.css";
 
 import { ClusterThumbnail } from "./ClusterThumbnail";
@@ -50,14 +55,19 @@ const BASE_URL = import.meta.env.BASE_URL || "/"; // Use the base URL from Vite'
 // };
 
 function App() {
-  const [selectedBuilding, setSelectedBuilding] = useState<any | null>(null);
+  const mapRef = useRef<MapRef>(null);
+
+  const [selectedBuilding, setSelectedBuilding] =
+    useState<MapGeoJSONFeature | null>(null);
   const [buildingPois, setBuildingPois] = useState<PoiA[] | null>(null);
   const [selectedPoi, setSelectedPoi] = useState<PoiA | null>(null);
   const [currentZoom, setCurrentZoom] = useState<number>(18);
   const [selectedSurface, setSelectedSurface] = useState<SurfaceSample | null>(
     null,
   );
-  const [clickedLineId, setClickedLineId] = useState<string | null>("");
+  const [clickedLine, setClickedLine] = useState<MapGeoJSONFeature | null>(
+    null,
+  );
 
   const [activeCluster, setActiveCluster] = useState<{
     cluster: ClusterFeature;
@@ -115,7 +125,10 @@ function App() {
     switch (clickedFeature.layer.id) {
       case "way-fill-base":
         console.log("Clicked on a way:", clickedFeature);
-        setClickedLineId(clickedFeature.properties["@id"] || "");
+        setClickedLine(clickedFeature || null);
+        if (mapRef.current) {
+          mapRef.current.setPitch(45); // Ajusta o pitch para 45 graus
+        }
         break;
       default:
         // Busca no seu JSON local se você tem informações estendidas para esse prédio
@@ -130,6 +143,10 @@ function App() {
         break;
     }
   };
+
+  const bufferedWay = clickedLine
+    ? turf.buffer(clickedLine, 5, { units: "meters" })
+    : null;
 
   return (
     <div className="app">
@@ -156,6 +173,7 @@ function App() {
           )}
 
           <Map
+            ref={mapRef}
             initialViewState={getViewState()}
             onLoad={(event) => {
               const map = event.target;
@@ -172,7 +190,7 @@ function App() {
 
               tiles.forEach((tile) => {
                 map.loadImage(tile.url).then((res) => {
-                  map.addImage(tile.name, res.data);
+                  map.addImage(tile.name, res.data, { pixelRatio: 1.5 });
                 });
               });
             }}
@@ -194,50 +212,72 @@ function App() {
           >
             {/* == WAY == */}
             {currentZoom >= 18 && (
-              <Source id="path-source" type="geojson" data={WAYS}>
-                {/* 1. Base Layer (Always visible at low opacity) */}
-                <Layer
-                  beforeId="building"
-                  id="way-fill-base"
-                  type="line"
-                  paint={{
-                    "line-pattern": [
-                      "match",
-                      ["get", "surface"],
-                      "asphalt",
-                      "concreto-escuro",
-                      "paving_stones",
-                      "pedregulho",
-                      "",
-                    ],
-                    "line-width": 18,
-                    "line-opacity": 0.3, // Constant global value
-                  }}
-                  layout={{ "line-cap": "round" }}
-                />
+              <>
+                <Source id="way-box-source" type="geojson" data={bufferedWay}>
+                  <Layer
+                    id="way-3d-block"
+                    type="fill-extrusion"
+                    paint={{
+                      // "fill-extrusion-color": "#917cff",
+                      "fill-extrusion-pattern": "concreto-escuro",
+                      "fill-extrusion-opacity": 0.9,
+                      // 1. The altitude where the BOTTOM of the shape begins (meters above ground)
+                      "fill-extrusion-base": 10,
+                      // 2. The altitude where the TOP of the shape ends (meters above ground)
+                      // If this is 4, your floating path will be exactly 1 meter thick.
+                      "fill-extrusion-height": 13,
+                    }}
+                  />
+                </Source>
+                <Source id="path-source" type="geojson" data={WAYS}>
+                  {/* 1. Base Layer (Always visible at low opacity) */}
+                  <Layer
+                    beforeId="building"
+                    id="way-fill-base"
+                    type="line"
+                    paint={{
+                      "line-pattern": [
+                        "match",
+                        ["get", "surface"],
+                        "asphalt",
+                        "concreto-escuro",
+                        "paving_stones",
+                        "pedregulho",
+                        "",
+                      ],
+                      "line-width": 18,
+                      "line-opacity": 0.3, // Constant global value
+                    }}
+                    layout={{ "line-cap": "round" }}
+                  />
 
-                {/* 2. Highlight Layer (Only shows the active feature) */}
-                <Layer
-                  beforeId="building"
-                  id="way-fill-highlight"
-                  type="line"
-                  // Use filter to isolate the selected line feature
-                  filter={["==", ["get", "@id"], clickedLineId || ""]}
-                  paint={{
-                    "line-pattern": [
-                      "match",
-                      ["get", "surface"],
-                      "asphalt",
-                      "concreto-escuro",
-                      "paving_stones",
-                      "pedregulho",
-                      "",
-                    ],
-                    "line-width": 30,
-                  }}
-                  layout={{ "line-cap": "round" }}
-                />
-              </Source>
+                  {/* 2. Highlight Layer (Only shows the active feature) */}
+                  {/* <Layer
+                    beforeId="building"
+                    id="way-fill-highlight"
+                    type="line"
+                    // Use filter to isolate the selected line feature
+                    filter={[
+                      "==",
+                      ["get", "@id"],
+                      clickedLine?.properties?.["@id"] || "",
+                    ]}
+                    paint={{
+                      "line-pattern": [
+                        "match",
+                        ["get", "surface"],
+                        "asphalt",
+                        "concreto-escuro",
+                        "paving_stones",
+                        "pedregulho",
+                        "",
+                      ],
+                      "line-width": 30,
+                    }}
+                    layout={{ "line-cap": "round" }}
+                  /> */}
+                </Source>
+              </>
             )}
 
             {/* == WAY == */}
