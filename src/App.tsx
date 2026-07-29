@@ -22,7 +22,7 @@ import SURFACE_SAMPLES from "./data/surface-samples.json";
 import WAYS from "./data/ways.json";
 
 const inova = BUILDINGS.features[0];
-// Bounding box format: [Southwest Lng, Southwest Lat], Northeast Lng, Northeast Lat]
+// Bounding box format: [Southwest Lng, Southwest Lat, Northeast Lng, Northeast Lat]
 const CAMPUS_BOUNDS: [number, number, number, number] = [
   -46.745496,
   -23.572641, // Southwest corner
@@ -104,6 +104,8 @@ function App() {
     "poi_transit",
     "poi_own",
     "way-fill-base",
+    "road_service_track",
+    "road_path_pedestrian",
   ];
 
   // Define your GeoJSON data
@@ -121,6 +123,8 @@ function App() {
     if (!features || features.length === 0) return;
 
     const clickedFeature = features[0];
+
+    console.log("Clicked feature: ", clickedFeature);
 
     switch (clickedFeature.layer.id) {
       case "way-fill-base":
@@ -145,7 +149,7 @@ function App() {
   };
 
   const bufferedWay = clickedLine
-    ? turf.buffer(clickedLine, 5, { units: "meters" })
+    ? turf.buffer(clickedLine, 3, { units: "meters" })
     : null;
 
   // 2. React to clickedLine state shifts
@@ -261,10 +265,10 @@ function App() {
                       // "fill-extrusion-color": "#917cff",
                       "fill-extrusion-opacity": 0.9,
                       // 1. The altitude where the BOTTOM of the shape begins (meters above ground)
-                      "fill-extrusion-base": 10,
+                      "fill-extrusion-base": 0,
                       // 2. The altitude where the TOP of the shape ends (meters above ground)
                       // If this is 4, your floating path will be exactly 1 meter thick.
-                      "fill-extrusion-height": 12,
+                      "fill-extrusion-height": 1,
                       "fill-extrusion-pattern": [
                         "match",
                         ["get", "surface"],
