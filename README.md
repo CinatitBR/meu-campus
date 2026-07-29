@@ -1,35 +1,58 @@
-# React + TypeScript + Vite
+# React Vite + React MapLibre JS
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Esse projeto utiliza os frameworks:
 
-Currently, two official plugins are available:
+- [React Vite](https://visgl.github.io/react-maplibre/): Responsável por rodar um servidor com React localmente e gerar uma build final para deploy.
+- [React MapLibre](https://visgl.github.io/react-maplibre/): É um porte do projeto MapLibre para React; realiza a renderização do mapa e suas características na tela.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Dados locais
 
-## React Compiler
+### Dados geográficos
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+Os nossos dados locais são elementos geográficos. Eles são armazenados em arquivos JSON, utilizando o formato [GeoJSON](https://geojson.org/), e estão localizados na pasta src/data. A seguir, um trecho do arquivo src/data/ways.json, com a organização definida pelo GeoJSON.
 
 ```json
 {
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
+  "type": "Feature",
+  "properties": {
+    "@id": "way/34239670",
+    "cycleway:both": "shared_lane",
+    "cycleway:left:lane": "pictogram",
+    "highway": "residential",
+    "maxspeed": "40",
+    "name": "Rua do Lago",
+    "oneway": "no",
+    "parking:left": "no",
+    "parking:right": "street_side",
+    "parking:right:orientation": "parallel",
+    "source": "local knowledge",
+    "source:maxspeed": "sign",
+    "surface": "asphalt"
   },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
+  "geometry": {
+    "type": "LineString",
+    "coordinates": [
+      [-46.7304505, -23.5606474],
+      [-46.7306531, -23.5605547],
+      [-46.7310886, -23.5603271]
+    ]
+  },
+  "id": "way/34239670"
 }
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+### Assets
+
+As imagens estão armazenadas na pasta /public/images/.
+
+- tiles: armazena os tiles que compõem a textura dos pisos.
+- surface-points: fotos tiradas de pisos, que indicam pontos de interesse como buracos.
+- leisure: imagens dos pontos de interesse de lazer.
+- elevator-inova-1: imagens associadas ao elevador 1 do inova.
+
+## App.src
+
+Concentra e única e principal tela do aplicativo. Renderiza um mapa utilizando o MapLibre e armazena todos os estados da interface.
 
 ## Data schema
 
