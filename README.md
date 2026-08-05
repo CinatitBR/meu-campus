@@ -41,6 +41,8 @@ Os nossos dados locais são elementos geográficos. Eles são armazenados em arq
 }
 ```
 
+Para explorar a criação e edição de dados GeoJSON, recomendo acessar a plataforma [geojson.io](https://geojson.io/).
+
 ### Assets
 
 As imagens estão armazenadas na pasta /public/images/.

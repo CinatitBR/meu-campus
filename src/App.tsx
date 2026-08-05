@@ -288,17 +288,24 @@ function App() {
                     id="way-fill-base"
                     type="line"
                     paint={{
-                      "line-pattern": [
+                      // "line-pattern": [
+                      //   "match",
+                      //   ["get", "surface"],
+                      //   "asphalt",
+                      //   "concreto-escuro",
+                      //   "paving_stones",
+                      //   "pedregulho",
+                      //   "",
+                      // ],
+                      "line-color": [
                         "match",
                         ["get", "surface"],
                         "asphalt",
-                        "concreto-escuro",
-                        "paving_stones",
-                        "pedregulho",
-                        "",
+                        "#FF0000",
+                        "#0400ff",
                       ],
-                      "line-width": 18,
-                      "line-opacity": 0.3, // Constant global value
+                      "line-width": 40,
+                      "line-opacity": 1, // Constant global value
                     }}
                     layout={{ "line-cap": "round" }}
                   />
