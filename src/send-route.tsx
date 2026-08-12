@@ -1,10 +1,11 @@
 import { useState } from "react";
 import type { ChangeEvent } from "react";
 import ExifReader from "exifreader";
+import { heicTo } from "heic-to";
 
-const MAX_WIDTH = 1200;
-const MAX_HEIGHT = 1200;
-const QUALITY = 0.8; // Varies from 0 (most aggressive compression) to 1 (least agressive).
+const MAX_WIDTH = 1000;
+const MAX_HEIGHT = 1000;
+const QUALITY = 0.7;
 
 interface ConvertOptions {
   maxWidth?: number;
@@ -18,7 +19,6 @@ export interface CoordsData {
   lon: number;
 }
 
-// Representa o resultado do processamento de cada imagem para os cards
 export interface ProcessedCard {
   originalName: string;
   convertedName: string;
@@ -28,8 +28,22 @@ export interface ProcessedCard {
   sizeBytes?: number;
 }
 
-// Helper para extrair coordenadas GPS do EXIF
-async function extractExifCoords(file: File): Promise<CoordsData | null> {
+// Helper to check if a file is HEIC
+function isHeicFile(file: File): boolean {
+  const name = file.name.toLowerCase();
+  return (
+    file.type === "image/heic" ||
+    file.type === "image/heif" ||
+    name.endsWith(".heic") ||
+    name.endsWith(".heif")
+  );
+}
+
+// Helper to extract GPS coordinates from EXIF metadata
+async function extractExifCoords(
+  file: File | Blob,
+  filename: string,
+): Promise<CoordsData | null> {
   try {
     const arrayBuffer = await file.arrayBuffer();
     const tags = ExifReader.load(arrayBuffer);
@@ -39,7 +53,7 @@ async function extractExifCoords(file: File): Promise<CoordsData | null> {
 
     if (latitude !== undefined && longitude !== undefined) {
       return {
-        filename: file.name,
+        filename,
         lat: parseFloat(latitude),
         lon: parseFloat(longitude),
       };
@@ -51,15 +65,16 @@ async function extractExifCoords(file: File): Promise<CoordsData | null> {
   return null;
 }
 
+// Converts standard images or HEIC Blobs to WebP via Canvas
 function convertToWebP(
-  file: File,
+  fileOrBlob: File | Blob,
   options: ConvertOptions = {},
 ): Promise<Blob> {
   const { maxWidth = 1920, maxHeight = 1080, quality = 0.7 } = options;
 
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(fileOrBlob);
 
     reader.onload = (event: ProgressEvent<FileReader>) => {
       const result = event.target?.result;
@@ -108,11 +123,7 @@ function convertToWebP(
       };
 
       img.onerror = () =>
-        reject(
-          new Error(
-            "Falha ao carregar a imagem. Talvez o formato não seja compatível. Utilize .jpg, .png ou .webp.",
-          ),
-        );
+        reject(new Error("Falha ao carregar a imagem no Canvas."));
     };
 
     reader.onerror = (error) => reject(error);
@@ -123,20 +134,18 @@ function downloadBlob(blob: Blob, fileName: string): void {
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
 
-  // Prevent default link navigation behavior and ensure anchor remains unrendered
   anchor.style.display = "none";
   anchor.href = url;
   anchor.download = fileName;
-  anchor.target = "_blank"; // Safety fallback to avoid replacing current page
 
   document.body.appendChild(anchor);
   anchor.click();
 
-  // Defer DOM cleanup and URL revocation so the browser has time to register the download
+  // Buffer de 1s para garantir o handoff no Firefox sem abrir novas abas
   setTimeout(() => {
     document.body.removeChild(anchor);
     URL.revokeObjectURL(url);
-  }, 100);
+  }, 1000);
 }
 
 function formatFileSize(bytes: number): string {
@@ -159,12 +168,23 @@ function SendRoute() {
     const files = event.target.files;
     if (!files || files.length === 0) return;
 
-    const imageFiles = Array.from(files).filter((file) =>
-      file.type.startsWith("image/"),
-    );
+    // Filtra arquivos aceitando .png, .jpg, .jpeg, .heic e .heif
+    const validFiles = Array.from(files).filter((file) => {
+      const name = file.name.toLowerCase();
+      console.log(file.type);
+      return (
+        file.type.startsWith("image/") ||
+        file.type === "image/heic" ||
+        file.type === "image/heif" ||
+        name.endsWith(".heic") ||
+        name.endsWith(".heif")
+      );
+    });
 
-    if (imageFiles.length === 0) {
-      setErrorMessage("Nenhuma imagem válida foi encontrada na seleção.");
+    if (validFiles.length === 0) {
+      setErrorMessage(
+        "Nenhuma imagem válida (.png, .jpg, .heic) foi encontrada.",
+      );
       event.target.value = "";
       return;
     }
@@ -174,36 +194,49 @@ function SendRoute() {
       setErrorMessage(null);
       setCoordsList([]);
       setProcessedCards([]);
-      setProgress({ current: 0, total: imageFiles.length });
+      setProgress({ current: 0, total: validFiles.length });
 
       const extractedCoords: CoordsData[] = [];
       const cardsResults: ProcessedCard[] = [];
       let completedCount = 0;
 
       await Promise.all(
-        imageFiles.map(async (file) => {
+        validFiles.map(async (file) => {
           const originalNameWithoutExt =
             file.name.substring(0, file.name.lastIndexOf(".")) || "imagem";
           const convertedName = `${originalNameWithoutExt}.webp`;
 
           try {
-            // 1. EXTRAIR COORDENADAS EXIF
-            const coords = await extractExifCoords(file);
+            let processedBlob: Blob | File = file;
+
+            // 1. SE FOR HEIC, EXTRAI DADOS EXIF DO ARQUIVO BRUTO PRIMEIRO
+            const coords = await extractExifCoords(file, file.name);
             if (coords) {
               extractedCoords.push(coords);
             }
 
-            // 2. CONVERTER PARA WEBP
-            const webpBlob = await convertToWebP(file, {
+            // 2. CONVERTE HEIC PARA UM BLOB DE IMAGEM INTERMEDIÁRIO SE NECESSÁRIO
+            if (isHeicFile(file)) {
+              const convertedHeic = await heicTo({
+                blob: file,
+                type: "image/jpeg",
+                quality: 0.9,
+              });
+
+              processedBlob = convertedHeic;
+            }
+
+            // 3. CONVERTE PARA WEBP
+            const webpBlob = await convertToWebP(processedBlob, {
               maxWidth: MAX_WIDTH,
               maxHeight: MAX_HEIGHT,
               quality: QUALITY,
             });
 
-            // 3. FAZER DOWNLOAD AUTOMÁTICO
+            // 4. FAZER DOWNLOAD AUTOMÁTICO
             downloadBlob(webpBlob, convertedName);
 
-            // 4. CRIAR PREVIEW EM MEMÓRIA PARA O CARD
+            // 5. PREVIEW EM MEMÓRIA PARA O CARD
             const previewUrl = URL.createObjectURL(webpBlob);
 
             cardsResults.push({
@@ -226,7 +259,7 @@ function SendRoute() {
             });
           } finally {
             completedCount += 1;
-            setProgress({ current: completedCount, total: imageFiles.length });
+            setProgress({ current: completedCount, total: validFiles.length });
           }
         }),
       );
@@ -235,9 +268,7 @@ function SendRoute() {
       setProcessedCards(cardsResults);
     } catch (error) {
       console.error("Erro geral no lote:", error);
-      setErrorMessage(
-        "Falha ao processar lote de imagens. Verifique se os arquivos são válidos.",
-      );
+      setErrorMessage("Falha ao processar lote de imagens.");
     } finally {
       setIsProcessing(false);
       event.target.value = "";
@@ -246,19 +277,20 @@ function SendRoute() {
 
   return (
     <div className="flex flex-col items-center gap-6 p-8 max-w-6xl mx-auto">
-      <h1 className="text-2xl font-bold">
-        Processador de imagens e extrator de localização
-      </h1>
+      <header>
+        <h1 className="text-2xl font-bold">Processador de imagens</h1>
+        <p>Extrai coordenadas e converte</p>
+      </header>
 
       <div className="flex gap-4">
         {/* Seleção de múltiplos arquivos */}
         <label className="cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 px-5 rounded-lg shadow-md transition-colors">
           {isProcessing
             ? `Processando (${progress.current}/${progress.total})...`
-            : "Selecionar Imagens"}
+            : "Selecionar Imagens (.jpg, .png, .heic)"}
           <input
             type="file"
-            accept="image/*"
+            accept="image/png, image/jpeg, image/heic, image/heif, .heic, .heif"
             multiple
             onChange={handleFileChange}
             disabled={isProcessing}
@@ -273,8 +305,8 @@ function SendRoute() {
             : "Selecionar Pasta de Imagens"}
           <input
             type="file"
-            accept="image/*"
-            // @ts-expect-error atributos não padrão para pasta no Chrome/Safari/Firefox
+            accept="image/png, image/jpeg, image/heic, image/heif, .heic, .heif"
+            // @ts-expect-error atributos não padrão para seleção de pasta
             webkitdirectory=""
             directory=""
             onChange={handleFileChange}
@@ -288,7 +320,7 @@ function SendRoute() {
         <p className="text-red-500 text-sm font-medium">{errorMessage}</p>
       )}
 
-      {/* Tabela de coordenadas EXIF (se houver) */}
+      {/* Tabela de coordenadas EXIF */}
       {coordsList.length > 0 && (
         <div className="w-full p-4 bg-gray-50 rounded-lg border border-gray-200 font-mono text-sm">
           <h2 className="font-bold mb-2 text-gray-800">
@@ -329,7 +361,6 @@ function SendRoute() {
                     : "bg-red-50 border-red-200"
                 }`}
               >
-                {/* Preview da Imagem ou Ícone de Erro */}
                 <div className="h-32 w-full bg-gray-100 flex items-center justify-center overflow-hidden relative">
                   {card.status === "success" && card.previewUrl ? (
                     <img
@@ -347,19 +378,12 @@ function SendRoute() {
                   )}
                 </div>
 
-                {/* Rodapé do Card com Nome e Status */}
                 <div className="p-3 flex flex-col justify-between flex-grow gap-1">
                   <p
-                    className="text-sm font-medium text-gray-600 truncate"
-                    title={
-                      card.status === "success"
-                        ? card.convertedName
-                        : card.originalName
-                    }
+                    className="text-xs font-medium text-gray-800 truncate"
+                    title={card.convertedName}
                   >
-                    {card.status === "success"
-                      ? card.convertedName
-                      : card.originalName}
+                    {card.convertedName}
                   </p>
 
                   {card.status === "success" ? (
@@ -369,7 +393,7 @@ function SendRoute() {
                       )}
                     </div>
                   ) : (
-                    <p className="text-[13px] text-red-600">
+                    <p className="text-[11px] text-red-600 line-clamp-2">
                       {card.errorMessage}
                     </p>
                   )}
