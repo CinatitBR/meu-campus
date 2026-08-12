@@ -7,8 +7,9 @@ import type {
 } from "@vis.gl/react-maplibre";
 import * as turf from "@turf/buffer";
 import "maplibre-gl/dist/maplibre-gl.css";
+import type { Feature, FeatureCollection } from "geojson";
 
-import { ClusterThumbnail } from "./ClusterThumbnail";
+import { ClusterThumbnail } from "./components/ClusterThumbnail";
 import type { ClusterFeature } from "./useClusters";
 
 import { X } from "lucide-react";
@@ -34,10 +35,12 @@ const CAMPUS_BOUNDS: [number, number, number, number] = [
 const MY_WAY = WAYS.features.find((f) => f.id === "way/152732609");
 const ANOTHER_WAY = WAYS.features.find((f) => f.id === "way/422971161");
 
-const WAYS_GEOJSON =
-  MY_WAY && ANOTHER_WAY
-    ? { type: "FeatureCollection", features: [MY_WAY, ANOTHER_WAY] }
-    : { type: "FeatureCollection", features: [] };
+const WAYS_GEOJSON = {
+  type: "FeatureCollection" as const,
+  features: [MY_WAY, ANOTHER_WAY].filter((f): f is NonNullable<typeof f> =>
+    Boolean(f),
+  ) as Feature[],
+};
 
 console.log("WAYS_GEOJSON", WAYS_GEOJSON);
 
@@ -47,12 +50,6 @@ const START_LAT = inova.geometry.coordinates[1];
 type PoiA = (typeof POIS_A)[0];
 type SurfaceSample = (typeof SURFACE_SAMPLES)["features"][0];
 const BASE_URL = import.meta.env.BASE_URL || "/"; // Use the base URL from Vite's environment variables, defaulting to "/"
-
-// // Define your GeoJSON data
-// const geojsonSource = {
-//   type: "FeatureCollection",
-//   features: POIS_A,
-// };
 
 function App() {
   const mapRef = useRef<MapRef>(null);
@@ -112,7 +109,7 @@ function App() {
   const geojsonSource = {
     type: "FeatureCollection",
     features: selectedPoi ? [selectedPoi] : [],
-  };
+  } as FeatureCollection;
 
   const handleMapClick = (event: MapLayerMouseEvent) => {
     setActiveCluster(null);
@@ -281,22 +278,13 @@ function App() {
                     }}
                   />
                 </Source>
-                <Source id="path-source" type="geojson" data={WAYS}>
+                <Source id="path-source" type="geojson" data={WAYS_GEOJSON}>
                   {/* 1. Base Layer (Always visible at low opacity) */}
                   <Layer
                     beforeId="building"
                     id="way-fill-base"
                     type="line"
                     paint={{
-                      // "line-pattern": [
-                      //   "match",
-                      //   ["get", "surface"],
-                      //   "asphalt",
-                      //   "concreto-escuro",
-                      //   "paving_stones",
-                      //   "pedregulho",
-                      //   "",
-                      // ],
                       "line-color": [
                         "match",
                         ["get", "surface"],
@@ -309,39 +297,17 @@ function App() {
                     }}
                     layout={{ "line-cap": "round" }}
                   />
-
-                  {/* 2. Highlight Layer (Only shows the active feature) */}
-                  {/* <Layer
-                    beforeId="building"
-                    id="way-fill-highlight"
-                    type="line"
-                    // Use filter to isolate the selected line feature
-                    filter={[
-                      "==",
-                      ["get", "@id"],
-                      clickedLine?.properties?.["@id"] || "",
-                    ]}
-                    paint={{
-                      "line-pattern": [
-                        "match",
-                        ["get", "surface"],
-                        "asphalt",
-                        "concreto-escuro",
-                        "paving_stones",
-                        "pedregulho",
-                        "",
-                      ],
-                      "line-width": 30,
-                    }}
-                    layout={{ "line-cap": "round" }}
-                  /> */}
                 </Source>
               </>
             )}
 
             {/* == WAY == */}
 
-            <Source id="my-poi-source" type="geojson" data={BUILDINGS}>
+            <Source
+              id="my-poi-source"
+              type="geojson"
+              data={BUILDINGS as FeatureCollection}
+            >
               <Layer
                 id="poi_own"
                 type="symbol"
@@ -372,7 +338,7 @@ function App() {
               type="geojson"
               data={
                 selectedSurface
-                  ? selectedSurface
+                  ? (selectedSurface as Feature)
                   : { type: "FeatureCollection", features: [] }
               }
             >
@@ -389,7 +355,6 @@ function App() {
                 const thumbnail_url = `${BASE_URL}images/surface-points/${representativeId}/photo.jpg`;
                 const isActive =
                   activeCluster?.cluster.id === feature.properties.id;
-                // const hasMultiple = cluster.members.length > 1;
 
                 return (
                   <Marker
