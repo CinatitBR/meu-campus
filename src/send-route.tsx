@@ -282,38 +282,20 @@ function SendRoute() {
         <p>Extrai coordenadas e converte</p>
       </header>
 
-      <div className="flex gap-4">
-        {/* Seleção de múltiplos arquivos */}
-        <label className="cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 px-5 rounded-lg shadow-md transition-colors">
-          {isProcessing
-            ? `Processando (${progress.current}/${progress.total})...`
-            : "Selecionar Imagens (.jpg, .png, .heic)"}
-          <input
-            type="file"
-            accept="image/png, image/jpeg, image/heic, image/heif, .heic, .heif"
-            multiple
-            onChange={handleFileChange}
-            disabled={isProcessing}
-            className="hidden"
-          />
-        </label>
-
-        {/* Seleção de pasta inteira */}
-        <label className="cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2.5 px-5 rounded-lg shadow-md transition-colors">
-          {isProcessing
-            ? "Processando Pasta..."
-            : "Selecionar Pasta de Imagens"}
-          <input
-            type="file"
-            accept="image/png, image/jpeg, image/heic, image/heif, .heic, .heif"
-            // @ts-expect-error atributos não padrão para seleção de pasta
-            webkitdirectory=""
-            directory=""
-            onChange={handleFileChange}
-            disabled={isProcessing}
-            className="hidden"
-          />
-        </label>
+      <div className="w-full flex flex-col items-center p-10" id="uploadArea">
+        <input
+          type="file"
+          id="fileInput"
+          className="file-input hidden"
+          accept="image/png, image/jpeg, image/heic, image/heif, .heic, .heif"
+          onChange={handleFileChange}
+        />
+        <button
+          className="bg-gradient-to-tr from-indigo-600 to-violet-600 text-white border-none py-[15px] px-[30px] rounded-lg text-lg cursor-pointer font-bold"
+          onClick={() => document.getElementById("fileInput")!.click()}
+        >
+          📁 Escolher imagens
+        </button>
       </div>
 
       {errorMessage && (
