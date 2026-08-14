@@ -1,23 +1,10 @@
-### Criar banco de dados (Cloudflare D1)
+### Create frontend method to define a route
 
-- building (represents a building)
-  - id
-  - name (the proper name of the building. ex: IME)
-  - slug (facilitates searchs on the API and URL. ex: ime-usp)
-  - lon (longitude)
-  - lat (latitude)
+- Create UI to order uploaded images.
 
-- visual_route (represents a route. It's composed of a set of route steps)
-  - id
-  - building_id (the building where the route belongs to)
-  - status (hidden, published)
+### Verify that sent blob is an image by its magic numbers
 
-- visual_route_step (store data about a route step)
-  - id
-  - visual_route_id
-  - step_order
-  - thumbnail_url
-  - description
+- This ensures the file is an actual image, and not malicious binary.
 
 ### Após processar as imagens, criar interface para permitir definir uma rota
 

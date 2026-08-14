@@ -5,7 +5,7 @@ import { heicTo } from "heic-to";
 
 const MAX_WIDTH = 1000;
 const MAX_HEIGHT = 1000;
-const QUALITY = 0.7;
+const QUALITY = 0.8;
 
 interface ConvertOptions {
   maxWidth?: number;
@@ -148,6 +148,35 @@ function downloadBlob(blob: Blob, fileName: string): void {
   }, 1000);
 }
 
+async function uploadImage(
+  blob: Blob,
+  lon: number,
+  lat: number,
+): Promise<void> {
+  const formData = new FormData();
+
+  formData.append("image", blob);
+  formData.append("lon", lon.toString());
+  formData.append("lat", lat.toString());
+  formData.append("folder", "routes");
+
+  try {
+    const localApi = "http://localhost:8787/api/images/upload";
+    const response = await fetch(localApi, {
+      method: "POST",
+      body: formData,
+    });
+
+    if (response.ok) {
+      console.log(response);
+    } else {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+  } catch (error) {
+    console.log("Error uploading image: ", error);
+  }
+}
+
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
@@ -234,7 +263,11 @@ function SendRoute() {
             });
 
             // 4. FAZER DOWNLOAD AUTOMÁTICO
-            downloadBlob(webpBlob, convertedName);
+            // downloadBlob(webpBlob, convertedName);
+
+            // 4. FAZ UPLOAD DA IMAGEM
+            console.log(webpBlob);
+            uploadImage(webpBlob, coords?.lon || 0, coords?.lat || 0);
 
             // 5. PREVIEW EM MEMÓRIA PARA O CARD
             const previewUrl = URL.createObjectURL(webpBlob);
@@ -288,13 +321,18 @@ function SendRoute() {
           id="fileInput"
           className="file-input hidden"
           accept="image/png, image/jpeg, image/heic, image/heif, .heic, .heif"
+          disabled={isProcessing}
           onChange={handleFileChange}
         />
+
         <button
           className="bg-gradient-to-tr from-indigo-600 to-violet-600 text-white border-none py-[15px] px-[30px] rounded-lg text-lg cursor-pointer font-bold"
           onClick={() => document.getElementById("fileInput")!.click()}
+          disabled={isProcessing}
         >
-          📁 Escolher imagens
+          {isProcessing
+            ? `Processando (${progress.current}/${progress.total})...`
+            : "📁 Selecionar imagens (.jpg, .png, .heic)"}
         </button>
       </div>
 

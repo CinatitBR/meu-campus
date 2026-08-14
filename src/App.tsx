@@ -42,8 +42,6 @@ const WAYS_GEOJSON = {
   ) as Feature[],
 };
 
-console.log("WAYS_GEOJSON", WAYS_GEOJSON);
-
 const START_LON = inova.geometry.coordinates[0];
 const START_LAT = inova.geometry.coordinates[1];
 
