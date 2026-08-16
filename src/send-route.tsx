@@ -3,6 +3,8 @@ import type { ChangeEvent, SubmitEvent } from "react";
 import ExifReader from "exifreader";
 import { heicTo } from "heic-to";
 
+import { BUILDINGS } from "./utils";
+
 const MAX_WIDTH = 1000;
 const MAX_HEIGHT = 1000;
 const QUALITY = 0.8;
@@ -532,17 +534,24 @@ export function SendRoute() {
                   htmlFor="building-id"
                   className="text-xs font-bold text-slate-700 uppercase"
                 >
-                  ID do Edifício / Bloco *
+                  Edifício / Instituto *
                 </label>
-                <input
+                <select
                   id="building-id"
-                  type="text"
-                  placeholder="ex: ime-bloco-a"
                   value={buildingId}
                   onChange={(e) => setBuildingId(e.target.value)}
                   required
                   className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-                />
+                >
+                  <option value="" disabled>
+                    Selecione o instituto/prédio...
+                  </option>
+                  {BUILDINGS.map((b) => (
+                    <option key={b.id} value={b.id}>
+                      {b.name}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="flex flex-col gap-1.5 md:col-span-2">
