@@ -157,7 +157,6 @@ export function SendRoute() {
     total: 0,
   });
   const [coordsList, setCoordsList] = useState<CoordsData[]>([]);
-  const [processedCards, setProcessedCards] = useState<ProcessedCard[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Visual Route Metadata State
@@ -210,7 +209,6 @@ export function SendRoute() {
       setErrorMessage(null);
       setSubmitFeedback(null);
       setCoordsList([]);
-      setProcessedCards([]);
       setProgress({ current: 0, total: validFiles.length });
 
       const extractedCoords: CoordsData[] = [];
@@ -291,7 +289,6 @@ export function SendRoute() {
       );
 
       setCoordsList(extractedCoords);
-      setProcessedCards(cardsResults);
       setSteps((prev) => [...prev, ...generatedSteps]);
     } catch (error) {
       console.error("Erro geral no lote:", error);
@@ -402,7 +399,6 @@ export function SendRoute() {
       setBuildingId("");
       steps.forEach((s) => URL.revokeObjectURL(s.previewUrl));
       setSteps([]);
-      setProcessedCards([]);
       setCoordsList([]);
     } catch (err: any) {
       console.error("Erro no envio:", err);

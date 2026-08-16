@@ -3,7 +3,7 @@
 // Aparece ancorado ao marcador clicado, acima dele.
 
 import { useEffect, useRef } from "react";
-import type { ClusterFeature } from "./useClusters";
+import type { ClusterFeature } from "../useClusters";
 import { X } from "lucide-react";
 
 interface Props {
