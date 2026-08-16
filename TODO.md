@@ -1,6 +1,8 @@
-### Create frontend method to define a route
+### Update backend for visual route creation
 
-- Create UI to order uploaded images.
+- Validate POST data in the api/visual-route
+  - Validate in a more robust way.
+- Add data to R2 and D1
 
 ### Verify that sent blob is an image by its magic numbers
 
