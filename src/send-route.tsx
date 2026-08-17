@@ -8,7 +8,7 @@ import { BUILDINGS } from "./utils";
 const MAX_WIDTH = 1000;
 const MAX_HEIGHT = 1000;
 const QUALITY = 0.8;
-const API_BASE_URL =
+const API_BASE_URL: string =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:8787";
 
 interface ConvertOptions {
@@ -447,7 +447,7 @@ export function SendRoute() {
 
         <button
           type="button"
-          className="cursor-pointer bg-gradient-to-tr from-indigo-600 to-violet-600 text-white font-semibold py-3.5 px-7 rounded-xl text-base shadow-md transition hover:opacity-95 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+          className="cursor-pointer bg-[#2b2b30] text-white font-semibold py-3.5 px-7 rounded-xl text-base shadow-md transition hover:opacity-95 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
           onClick={() => document.getElementById("fileInput")!.click()}
           disabled={isProcessing || isSubmitting}
         >
@@ -673,8 +673,8 @@ export function SendRoute() {
             className="w-full rounded-xl bg-emerald-600 py-3.5 text-base font-semibold text-white shadow transition hover:bg-emerald-700 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none"
           >
             {isSubmitting
-              ? "Enviando imagens para o Cloudflare R2 e salvando no D1..."
-              : `Salvar Rota Completa (${steps.length} passos)`}
+              ? "Enviando..."
+              : `Salvar Rota (${steps.length} passos)`}
           </button>
         </form>
       )}
