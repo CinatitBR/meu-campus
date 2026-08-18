@@ -11,6 +11,12 @@ const MAX_HEIGHT = 1000;
 const QUALITY = 80;
 const API_BASE_URL: string =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:8787";
+const allowedMimeTypes = [
+  "image/png",
+  "image/jpeg",
+  "image/heif",
+  "image/heic",
+];
 
 interface ConvertOptions {
   maxWidth?: number;
@@ -62,17 +68,19 @@ async function extractExifCoords(
 ): Promise<CoordsData | null> {
   try {
     const arrayBuffer = await file.arrayBuffer();
-    const tags = ExifReader.load(arrayBuffer);
+    const tags = ExifReader.load(arrayBuffer, { expanded: true });
 
-    const latitude = tags.GPSLatitude?.description;
-    const longitude = tags.GPSLongitude?.description;
+    const lon = tags.gps?.Longitude;
+    const lat = tags.gps?.Latitude;
 
-    if (latitude !== undefined && longitude !== undefined) {
+    if (lon !== undefined && lat !== undefined) {
       return {
         filename,
-        lat: parseFloat(latitude),
-        lon: parseFloat(longitude),
+        lon,
+        lat,
       };
+    } else {
+      console.log("Exif coords not valid.");
     }
   } catch (error) {
     console.warn("Nenhum dado EXIF GPS encontrado:", error);
@@ -191,14 +199,7 @@ export function SendRoute() {
 
     const validFiles = Array.from(files)
       .filter((file) => {
-        const name = file.name.toLowerCase();
-        return (
-          file.type.startsWith("image/") ||
-          file.type === "image/heic" ||
-          file.type === "image/heif" ||
-          name.endsWith(".heic") ||
-          name.endsWith(".heif")
-        );
+        return allowedMimeTypes.includes(file.type);
       })
       // 2. Sort in ascending order by name (natural numeric order)
       .sort((a, b) =>
@@ -451,7 +452,7 @@ export function SendRoute() {
           id="fileInput"
           className="hidden"
           multiple
-          accept="image/png, image/jpeg, image/heic, image/heif, .heic, .heif"
+          // accept="image/png, image/jpeg, image/heic, image/heif, .heic, .heif"
           disabled={isProcessing || isSubmitting}
           onChange={handleFileChange}
         />
