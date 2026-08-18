@@ -589,9 +589,9 @@ export function SendRoute() {
 
           {/* Steps Sequencing and Descriptions */}
           <div className="flex flex-col gap-4">
-            <h3 className="text-lg font-bold text-slate-800">
+            <h3 className="flex flex-col text-lg font-bold text-slate-800">
               Passos da Rota ({steps.length})
-              <span className="text-xs font-normal text-slate-500 ml-2">
+              <span className="text-xs font-normal text-slate-500">
                 Reordene conforme o fluxo do trajeto e descreva cada etapa
               </span>
             </h3>
