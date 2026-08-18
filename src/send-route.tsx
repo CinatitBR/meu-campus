@@ -2,12 +2,13 @@ import { useState } from "react";
 import type { ChangeEvent, SubmitEvent } from "react";
 import ExifReader from "exifreader";
 import { heicTo } from "heic-to";
+import { encode as encodeToWebp } from "@jsquash/webp";
 
 import { BUILDINGS } from "./utils";
 
 const MAX_WIDTH = 1000;
 const MAX_HEIGHT = 1000;
-const QUALITY = 0.8;
+const QUALITY = 80;
 const API_BASE_URL: string =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:8787";
 
@@ -85,7 +86,11 @@ function convertToWebP(
   fileOrBlob: File | Blob,
   options: ConvertOptions = {},
 ): Promise<Blob> {
-  const { maxWidth = 1920, maxHeight = 1080, quality = 0.7 } = options;
+  const {
+    maxWidth = MAX_WIDTH,
+    maxHeight = MAX_HEIGHT,
+    quality = QUALITY,
+  } = options;
 
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -113,6 +118,7 @@ function convertToWebP(
           height = maxHeight;
         }
 
+        // Create canvas
         const canvas = document.createElement("canvas");
         canvas.width = width;
         canvas.height = height;
@@ -127,13 +133,17 @@ function convertToWebP(
         ctx.fillRect(0, 0, width, height);
         ctx.drawImage(img, 0, 0, width, height);
 
-        canvas.toBlob(
-          (blob) => {
-            if (blob) resolve(blob);
-            else reject(new Error("Falha na conversão para WebP."));
+        const rawImageData = ctx.getImageData(0, 0, width, height);
+        encodeToWebp(rawImageData, { quality }).then(
+          // Called when conversion is successfull
+          (webpBuffer) => {
+            const webpBlob = new Blob([webpBuffer], { type: "image/webp" });
+            resolve(webpBlob);
           },
-          "image/webp",
-          quality,
+          // Called when conversion failed
+          () => {
+            reject(new Error("Falha na conversão para WebP."));
+          },
         );
       };
 
@@ -233,17 +243,18 @@ export function SendRoute() {
               extractedCoords.push(coords);
             }
 
-            // 2. Converte HEIC se necessário
+            // 2. Converte HEIC para jpeg se necessário
             if (isHeicFile(file)) {
               const convertedHeic = await heicTo({
                 blob: file,
                 type: "image/jpeg",
-                quality: 0.9,
+                quality: 1,
               });
               processedBlob = convertedHeic;
             }
 
-            // 3. Converte para WebP
+            // 3. Converte para WebP.
+            // processedBlob: é png ou jpeg.
             const webpBlob = await convertToWebP(processedBlob, {
               maxWidth: MAX_WIDTH,
               maxHeight: MAX_HEIGHT,

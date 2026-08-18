@@ -12,6 +12,7 @@
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
+    "@jsquash/webp": "^1.5.0",
     "@tailwindcss/vite": "^4.3.2",
     "@turf/buffer": "^7.3.5",
     "@vis.gl/react-maplibre": "^8.1.1",
