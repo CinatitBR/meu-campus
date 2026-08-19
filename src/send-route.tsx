@@ -89,71 +89,6 @@ async function extractExifCoords(
   return null;
 }
 
-// Converts standard images or HEIC Blobs to WebP via Canvas
-function convertToWebP(
-  fileOrBlob: File | Blob,
-  options: ConvertOptions = {},
-): Promise<Blob> {
-  const { maxWidth = 1920, maxHeight = 1080, quality = 0.8 } = options;
-
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(fileOrBlob);
-
-    reader.onload = (event: ProgressEvent<FileReader>) => {
-      const result = event.target?.result;
-      if (typeof result !== "string") {
-        reject(new Error("Falha ao ler arquivo."));
-        return;
-      }
-
-      const img = new Image();
-      img.src = result;
-
-      img.onload = () => {
-        let { width, height } = img;
-
-        if (width > maxWidth) {
-          height = Math.round((height * maxWidth) / width);
-          width = maxWidth;
-        }
-        if (height > maxHeight) {
-          width = Math.round((width * maxHeight) / height);
-          height = maxHeight;
-        }
-
-        const canvas = document.createElement("canvas");
-        canvas.width = width;
-        canvas.height = height;
-
-        const ctx = canvas.getContext("2d");
-        if (!ctx) {
-          reject(new Error("Não foi possível obter contexto 2D."));
-          return;
-        }
-
-        ctx.fillStyle = "#FFFFFF";
-        ctx.fillRect(0, 0, width, height);
-        ctx.drawImage(img, 0, 0, width, height);
-
-        canvas.toBlob(
-          (blob) => {
-            if (blob) resolve(blob);
-            else reject(new Error("Falha na conversão para WebP."));
-          },
-          "image/webp",
-          quality,
-        );
-      };
-
-      img.onerror = () =>
-        reject(new Error("Falha ao carregar a imagem no Canvas."));
-    };
-
-    reader.onerror = (error) => reject(error);
-  });
-}
-
 /*
   Converts image with the desired options using the canvas HTML element.
   @param fileOrBlob The source image
@@ -268,7 +203,11 @@ export function SendRoute() {
 
     const validFiles = Array.from(files)
       .filter((file) => {
-        return allowedMimeTypes.includes(file.type);
+        // file.type might be an empty string if the file is of type .HEIC.
+        const ext = file.name.split(".").pop()?.toLowerCase() || "";
+        const isHeicExt = ext === "heic" || ext === "heif";
+
+        return allowedMimeTypes.includes(file.type) || isHeicExt;
       })
       // 2. Sort in ascending order by name (natural numeric order)
       .sort((a, b) =>
@@ -526,7 +465,7 @@ export function SendRoute() {
           id="fileInput"
           className="hidden"
           multiple
-          // accept="image/png, image/jpeg, image/heic, image/heif, .heic, .heif"
+          accept="image/*, image/png, image/jpeg, image/heic, image/heif, .heic, .heif, .HEIC"
           disabled={isProcessing || isSubmitting}
           onChange={handleFileChange}
         />

@@ -1,13 +1,7 @@
-### Remove @jsquash/webp. Reason: doesn't perform well, it crashes on android M13 phone.
+### Update conversion
 
-- \*Use native canvas method.
-- If source image file is .heic:
-  - Convert to final blob jpg (using heic-to).
-  - Resize using canvas.
-
-- Create converToFinal(): converts the source image to the final image.
-  - If image source image is heic/heif: convert to jpg (heic-to) and resize with canvas.
-  - Otherwise: convert to webp and resize using canvas.
+- Implement function to check if browser can convert to webp.
+- Check if browser can convert to webp. If not, convert to jpg.
 
 ### Update backend
 
