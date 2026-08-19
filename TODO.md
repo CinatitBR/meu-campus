@@ -1,11 +1,17 @@
-### Use @jsquash/webp to encode image data to webp
+### Remove @jsquash/webp. Reason: doesn't perform well, it crashes on android M13 phone.
 
-1. Decode png, jpg, and heic images
+- \*Use native canvas method.
+- If source image file is .heic:
+  - Convert to final blob jpg (using heic-to).
+  - Resize using canvas.
 
-- png, jpg: decoded by browser canvas
-- heic: decoded by heic-to
+- Create converToFinal(): converts the source image to the final image.
+  - If image source image is heic/heif: convert to jpg (heic-to) and resize with canvas.
+  - Otherwise: convert to webp and resize using canvas.
 
-2. Encode to webp using encode() from @jsquash/webp
+### Update backend
+
+- Update worker to allow jpeg files. Webp and Jpeg files allowed.
 
 ---
 
